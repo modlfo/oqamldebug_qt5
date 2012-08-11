@@ -1,0 +1,20 @@
+<!DOCTYPE RCC><RCC version="1.0">
+<qresource>
+    <file>readme.html</file>
+    <file>images/debugger.png</file>
+    <file>images/copy.png</file>
+    <file>images/cut.png</file>
+    <file>images/debug-interrupt.png</file>
+    <file>images/debug-up.png</file>
+    <file>images/debug-down.png</file>
+    <file>images/debug-backstep.png</file>
+    <file>images/debug-finish.png</file>
+    <file>images/debug-next.png</file>
+    <file>images/debug-previous.png</file>
+    <file>images/debug-reverse.png</file>
+    <file>images/debug-run.png</file>
+    <file>images/debug-step.png</file>
+    <file>images/open.png</file>
+    <file>images/paste.png</file>
+</qresource>
+</RCC>
