@@ -20,4 +20,44 @@
 <H2>Download</H2>
 
 Sources: <a href="http://oqamldebug.forge.ocamlcore.org/oqamldebug.tbz2">http://oqamldebug.forge.ocamlcore.org/oqamldebug.tbz2</a>
+
+<H2>Compiling</H2>
+
+First install Qt 4.7 or above.
+
+then:
+<BLOCKQUOTE>
+<PRE>
+$ qmake
+$ make
+</PRE>
+</BLOCKQUOTE>
+
+<H2>Usage</H2>
+
+<PRE>
+oqamldebug "ocamldebug arguments"
+</PRE>
+
+if no arguments are provided, OQamlDebug starts with the arguments of the previous session.
+
+<H3>Using it with an IDE</H3>
+
+OQamlDebug reloads automatically the ocaml sources as soon as they are modified.
+If the debugged application is modified, the debugger is automatically reinitialized.
+So it is not necessary to close OQamlDebug when editing a project.
+
+<H3>Mouse</H3>
+<H3>Source Window</H3>
+In the source window, a click with the middle button displays the contains of a variable. 
+The context menu permits to set a breakpoint to the selected location.
+
+<H3>Debugger Window</H3>
+In the debugger window, the wheel mose can be use for debugging purpose:
+<UL>
+    <LI>Shift+Wheel: performs a single step or a single backstep.</LI>
+    <LI>Control+Wheel: performs a step over (next command) or a step over backwards (previous command).</LI>
+    <LI>Control+Shift+Wheel: navigate through the call stack.</LI>
+</UL>
+
 </BODY>
