@@ -28,3 +28,7 @@ DISTFILES += images/copy.png images/cut.png images/debug-backstep.png images/deb
                  images/debug-run.png images/debug-step.png images/debug-up.png \
                  images/open.png images/paste.png
 
+unix {
+    target.path = $$(PREFIX)/bin
+    INSTALLS += target
+}
