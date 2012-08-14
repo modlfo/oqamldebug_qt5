@@ -56,12 +56,20 @@ $ oqamldebug "ocamldebug arguments"
         The context menu permits to set a breakpoint to the selected location.
 
         <H4>Debugger Window</H4>
-        In the debugger window, the wheel mose can be use for debugging purpose:
+        In the debugger window, the wheel mouse can be use for debugging purpose:
         <DL>
             <DT>Shift+Wheel:</DT><DD> performs a single step or a single backstep.</DD>
             <DT>Control+Wheel:</DT><DD> performs a step over (next command) or a step over backwards (previous command).</DD>
             <DT>Control+Shift+Wheel:</DT><DD> navigate through the call stack.</DD>
         </DL>
+
+        <H2>Limitation</H2>
+
+        <H3>Ctrl-C on Windows</H3>
+        Ctrl-C on Unix is implemented by sending a SIGINT to a process. This mechanism does not work on Windows. 
+        This explains why interrupting an application does not work on Windows.
+        <BR>
+        For a support of this, ocamldebug has to be extended.
 
     </BODY>
 </HTML>
