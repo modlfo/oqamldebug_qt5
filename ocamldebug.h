@@ -40,6 +40,7 @@ signals:
     void stopDebugging( const QString &, int , int , bool);
     void debuggerStarted( bool );
 private:
+    void contextMenuEvent(QContextMenuEvent *event);
     void wheelEvent ( QWheelEvent * event );
     void saveLRU(const QString &command);
     void startProcess( const QString &program , const QStringList &arguments );

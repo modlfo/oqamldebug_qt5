@@ -245,6 +245,8 @@ void OCamlDebug::keyPressEvent ( QKeyEvent * e )
                  break;
          }
      }
+     else
+         QPlainTextEdit::keyPressEvent ( e );
 }
 
 void OCamlDebug::undisplayCommandLine()
@@ -274,6 +276,12 @@ void OCamlDebug::displayCommandLine()
             cur.movePosition(QTextCursor::PreviousCharacter, QTextCursor::MoveAnchor, cursor_pos) ;
         setTextCursor(cur);
         ensureCursorVisible();
+    }
+    else
+    {
+        QTextCursor cur = textCursor();
+        cur.movePosition(QTextCursor::End, QTextCursor::MoveAnchor );
+        setTextCursor(cur);
     }
 }
 
@@ -404,45 +412,61 @@ void OCamlDebug::saveLRU(const QString &command)
 
 void OCamlDebug::wheelEvent ( QWheelEvent * event )
 {
-    if ( 
-            ( ! ( event->modifiers() & Qt::ShiftModifier) ) 
-            &&
-            ( event->modifiers() & Qt::ControlModifier)
-       )
+    if ( process_p )
     {
-        if (event->delta() > 0 )
-            debugger( "previous" );
-        else if (event->delta() < 0 )
-            debugger( "next" );
+        if ( 
+                ( ! ( event->modifiers() & Qt::ShiftModifier) ) 
+                &&
+                ( event->modifiers() & Qt::ControlModifier)
+           )
+        {
+            if (event->delta() > 0 )
+                debugger( "previous" );
+            else if (event->delta() < 0 )
+                debugger( "next" );
 
-        event->ignore();
-    }
-    else if ( 
-            ( event->modifiers() & Qt::ShiftModifier)
-            &&
-            ( ! ( event->modifiers() & Qt::ControlModifier) )
-            )
-    {
-        if (event->delta() > 0 )
-            debugger( "backstep" );
-        else if (event->delta() < 0 )
-            debugger( "step" );
+            event->ignore();
+        }
+        else if ( 
+                ( event->modifiers() & Qt::ShiftModifier)
+                &&
+                ( ! ( event->modifiers() & Qt::ControlModifier) )
+                )
+        {
+            if (event->delta() > 0 )
+                debugger( "backstep" );
+            else if (event->delta() < 0 )
+                debugger( "step" );
 
-        event->ignore();
-    }
-    else if ( 
-            ( event->modifiers() & Qt::ShiftModifier)
-            &&
-            ( event->modifiers() & Qt::ControlModifier) 
-            )
-    {
-        if (event->delta() > 0 )
-            debugger( "up" );
-        else if (event->delta() < 0 )
-            debugger( "down" );
+            event->ignore();
+        }
+        else if ( 
+                ( event->modifiers() & Qt::ShiftModifier)
+                &&
+                ( event->modifiers() & Qt::ControlModifier) 
+                )
+        {
+            if (event->delta() > 0 )
+                debugger( "up" );
+            else if (event->delta() < 0 )
+                debugger( "down" );
 
-        event->ignore();
+            event->ignore();
+        }
+        else
+            QPlainTextEdit::wheelEvent( event );
     }
     else
         QPlainTextEdit::wheelEvent( event );
 }
+
+void OCamlDebug::contextMenuEvent(QContextMenuEvent *event)
+{
+    if ( process_p )
+        setReadOnly(true);
+    QMenu *menu = createStandardContextMenu();
+    menu->exec(event->globalPos());
+    setReadOnly(false);
+    delete menu;
+}
+
