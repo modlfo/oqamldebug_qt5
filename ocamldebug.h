@@ -4,10 +4,20 @@
 #include <QPlainTextEdit>
 #include <QProcess>
 #include <QString>
+#include <QMap>
 #include <QStringList>
 #include <QTextStream>
 #include "ocamldebughighlighter.h"
 #include "filesystemwatcher.h"
+
+struct BreakPoint
+{
+    int id;
+    QString file;
+    int fromLine, toLine, fromColumn, toColumn;
+};
+
+typedef QMap<int,BreakPoint> BreakPoints;
 
 class OCamlDebug : public QPlainTextEdit
 {
@@ -38,6 +48,7 @@ private slots:
 
 signals:
     void stopDebugging( const QString &, int , int , bool);
+    void breakPointList( const BreakPoints & );
     void debuggerStarted( bool );
 private:
     void contextMenuEvent(QContextMenuEvent *event);
@@ -50,6 +61,9 @@ private:
     OCamlDebugHighlighter *highlighter;
     QProcess *process_p;
     QRegExp emacsLineInfoRx ;
+    BreakPoints _breakpoints;
+    QRegExp deleteBreakpointRx ;
+    QRegExp newBreakpointRx ;
     QRegExp emacsHaltInfoRx ;
     QString _ocamldebug;
     QString _ocamlapp;

@@ -11,6 +11,8 @@
 
 OCamlDebug::OCamlDebug( QWidget *parent_p , const QString &ocamldebug, const QStringList &arguments ) : QPlainTextEdit(parent_p),
     emacsLineInfoRx("^\\x001A\\x001AM([^:]*):([^:]*):([^:]*):([^:\\n]*)\\n*$") ,
+    deleteBreakpointRx("^Removed breakpoint ([0-9]+) at [0-9]+ : .*$"),
+    newBreakpointRx("^Breakpoint ([0-9]+) at [0-9]+ : file ([^,]*), line ([0-9]+), characters ([0-9]+)-([0-9]+).*$"),
     emacsHaltInfoRx("^\\x001A\\x001AH.*$")
 {
     file_watch_p = NULL;
@@ -304,6 +306,9 @@ void OCamlDebug::startProcess( const QString &program , const QStringList &argum
         clear();
         return;
     }
+    _breakpoints.clear();
+    emit breakPointList( _breakpoints );
+
     emit debuggerStarted( true );
 }
 
@@ -339,9 +344,45 @@ void OCamlDebug::readChannel()
 
 void OCamlDebug::appendText( const QByteArray &text )
 {
+    bool display = true;
     QString data = QString::fromAscii( text );
-    if ( emacsLineInfoRx.indexIn(data) == 0 )
+    if ( deleteBreakpointRx.indexIn(data) == 0 )
     {
+        QString _id = deleteBreakpointRx.cap(1);
+        bool ok;
+        int id = _id.toInt(&ok);
+        if (ok)
+        {
+            _breakpoints.remove( id );
+            emit breakPointList( _breakpoints );
+        }
+    }
+    else if ( newBreakpointRx.indexIn(data) == 0 )
+    {
+        BreakPoint breakpoint;
+        QString _id = newBreakpointRx.cap(1);
+        breakpoint.file = newBreakpointRx.cap(2);
+        QString _line = newBreakpointRx.cap(3);
+        QString _from_char = newBreakpointRx.cap(4);
+        QString _to_char = newBreakpointRx.cap(5);
+        bool ok;
+        breakpoint.id = _id.toInt(&ok);
+        if (ok)
+            breakpoint.fromLine = _line.toInt(&ok);
+        breakpoint.toLine = breakpoint.fromLine;
+        if (ok)
+            breakpoint.fromColumn = _from_char.toInt(&ok);
+        if (ok)
+            breakpoint.toColumn = _to_char.toInt(&ok);
+        if (ok)
+        {
+            _breakpoints[ breakpoint.id ] = breakpoint;
+            emit breakPointList( _breakpoints );
+        }
+    }
+    else if ( emacsLineInfoRx.indexIn(data) == 0 )
+    {
+        display = false ;
         QString file = emacsLineInfoRx.cap(1);
         QString start_char_str = emacsLineInfoRx.cap(2);
         QString end_char_str = emacsLineInfoRx.cap(3);
@@ -362,9 +403,11 @@ void OCamlDebug::appendText( const QByteArray &text )
     }
     else if ( emacsHaltInfoRx.exactMatch(data) )
     {
+        display = false ;
         emit stopDebugging( QString() , 0 , 0 , false);
     }
-    else
+
+    if ( display )
     {
         undisplayCommandLine();
         QTextCursor cur = textCursor();

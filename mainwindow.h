@@ -2,6 +2,7 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
+#include "ocamldebug.h"
 
 class OCamlSource;
 class OCamlDebug;
@@ -33,6 +34,7 @@ private slots:
     void paste();
     void debuggerStart(bool);
     void debuggerStarted(bool b);
+    void breakPointList(const BreakPoints &b);
     void debugRun();
     void debugUp();
     void debugDown();

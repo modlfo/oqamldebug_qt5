@@ -62,6 +62,7 @@ void MainWindow::createDockWindows()
     dock->setObjectName("OCamlDebugDock");
     connect ( ocamldebug , SIGNAL( stopDebugging( const QString &, int , int , bool) ) , this ,SLOT( stopDebugging( const QString &, int , int , bool) ) );
     connect ( ocamldebug , SIGNAL( debuggerStarted( bool) ) , this ,SLOT( debuggerStarted( bool) ) );
+    connect ( ocamldebug , SIGNAL( breakPointList( const BreakPoints &) ) , this ,SLOT( breakPointList( const BreakPoints &) ) );
     dock->setWidget( ocamldebug );
     addDockWidget( Qt::BottomDockWidgetArea, dock );
     mainMenu->addAction( dock->toggleViewAction() );
@@ -701,6 +702,16 @@ void MainWindow::debugPrevious()
 {
     if (ocamldebug)
         ocamldebug->debugger("previous");
+}
+
+void MainWindow::breakPointList(const BreakPoints &b)
+{
+    foreach ( QMdiSubWindow * window, mdiArea->subWindowList() )
+    {
+        OCamlSource *mdiChild = qobject_cast<OCamlSource *>( window->widget() );
+        if (mdiChild)
+            mdiChild->breakPointList( b );
+    }
 }
 
 void MainWindow::debuggerStarted(bool b)

@@ -152,6 +152,35 @@ QString OCamlSource::strippedName( const QString &fullFileName )
     return QFileInfo( fullFileName ).fileName();
 }
 
+void OCamlSource::markBreakPoints(bool unmark)
+{
+    for( BreakPoints::const_iterator itBreakpoint = _breakpoints.begin(); itBreakpoint != _breakpoints.end() ; ++itBreakpoint )
+    {
+        QString file = QFileInfo( itBreakpoint.value().file ).canonicalFilePath();
+        if ( file == curFile )
+        {
+            QTextCharFormat selectedFormat;
+
+            if ( unmark )
+                selectedFormat.setBackground( QColor( Qt::white ) );
+            else
+                selectedFormat.setBackground( QColor( Qt::red ) );
+
+            QTextCursor cur = textCursor();
+            int line        = itBreakpoint.value().fromLine;
+            int from_column = itBreakpoint.value().fromColumn;
+            int to_column   = itBreakpoint.value().toColumn;
+
+            cur.movePosition( QTextCursor::Start, QTextCursor::MoveAnchor );
+            cur.movePosition( QTextCursor::NextBlock, QTextCursor::MoveAnchor, line-1 );
+            cur.movePosition( QTextCursor::NextCharacter, QTextCursor::MoveAnchor, from_column-1 );
+            cur.movePosition( QTextCursor::NextCharacter, QTextCursor::KeepAnchor, to_column - from_column );
+
+            cur.mergeCharFormat( selectedFormat );
+        }
+    }
+}
+
 void OCamlSource::markCurrentLocation()
 {
     timer_index++;
@@ -234,6 +263,7 @@ QString OCamlSource::stopDebugging( const QString &file, int start_char, int end
     _end_char = end_char;
     _after = after;
     timer_index = 0;
+    markBreakPoints(false);
     markCurrentLocation();
 
     cur.movePosition( QTextCursor::Start, QTextCursor::MoveAnchor );
@@ -369,4 +399,11 @@ void OCamlSource::mousePressEvent ( QMouseEvent * e )
     }
     else
         QPlainTextEdit::mousePressEvent(e);
+}
+
+void OCamlSource::breakPointList( const BreakPoints &b )
+{
+    markBreakPoints(true);
+    _breakpoints = b;
+    markBreakPoints(false);
 }
