@@ -96,6 +96,7 @@ OCamlDebugHighlighter::OCamlDebugHighlighter(QTextDocument *parent)
         << "Program exit."
         << "No source file for [A-Z][a-z.A-Z0-9_]*\\."
         << "Breakpoint [0-9]+ at [0-9]+ : .*$"
+        << "Removed breakpoint [0-9]+ at [0-9]+ : .*$"
         ;
     foreach (const QString &pattern, dbgInfoKeywords) 
     {
