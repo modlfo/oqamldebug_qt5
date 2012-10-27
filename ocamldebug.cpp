@@ -11,6 +11,7 @@
 
 OCamlDebug::OCamlDebug( QWidget *parent_p , const QString &ocamldebug, const QStringList &arguments ) : QPlainTextEdit(parent_p),
     emacsLineInfoRx("^\\x001A\\x001AM([^:]*):([^:]*):([^:]*):([^:\\n]*)\\n*$") ,
+    readyRx("^\\(ocd\\) *") ,
     deleteBreakpointRx("^Removed breakpoint ([0-9]+) at [0-9]+ : .*$"),
     newBreakpointRx("^Breakpoint ([0-9]+) at [0-9]+ : file ([^,]*), line ([0-9]+), characters ([0-9]+)-([0-9]+).*$"),
     emacsHaltInfoRx("^\\x001A\\x001AH.*$")
@@ -306,10 +307,45 @@ void OCamlDebug::startProcess( const QString &program , const QStringList &argum
         clear();
         return;
     }
+
+    emit debuggerStarted( true );
+    restoreBreakpoints();
+}
+
+void OCamlDebug::restoreBreakpoints()
+{
+    BreakPoints breakpoints = _breakpoints;
     _breakpoints.clear();
     emit breakPointList( _breakpoints );
 
-    emit debuggerStarted( true );
+    for (BreakPoints::const_iterator itBreakpoint = breakpoints.begin() ; itBreakpoint != breakpoints.end() ; ++itBreakpoint )
+    {
+        QFileInfo sourceInfo( itBreakpoint.value().file );
+        QString module = sourceInfo.baseName();
+        module = module.toLower();
+        if (module.length() > 0)
+        {
+            module[0] = module[0].toUpper();
+            QFile f ( itBreakpoint.value().file );
+            if ( f.open( QFile::ReadOnly | QFile::Text ) )
+            {
+                int pos = -1;
+                QString src = f.readAll();
+                for ( int l=1 ; l < itBreakpoint.value().fromLine ; l++ )
+                {
+                   pos = src.indexOf( "\n", pos+1 ); 
+                   if ( pos < 0 )
+                       continue;
+                }
+                pos += itBreakpoint.value().fromColumn;
+
+                QString command = QString("break @ %1 # %2")
+                    .arg(module)
+                    .arg( QString::number( pos ) );
+                debugger( command );
+            }
+        }
+    }
 }
 
 void OCamlDebug::receiveDataFromProcessStdError()
@@ -346,6 +382,7 @@ void OCamlDebug::appendText( const QByteArray &text )
 {
     bool display = true;
     QString data = QString::fromAscii( text );
+    data =  data.remove( readyRx );
     if ( deleteBreakpointRx.indexIn(data) == 0 )
     {
         QString _id = deleteBreakpointRx.cap(1);
@@ -413,7 +450,7 @@ void OCamlDebug::appendText( const QByteArray &text )
         QTextCursor cur = textCursor();
         cur.movePosition(QTextCursor::End, QTextCursor::MoveAnchor) ;
         setTextCursor(cur);
-        cur.insertText(data);
+        cur.insertText(text);
         displayCommandLine();
     }
 }

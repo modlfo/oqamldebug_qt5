@@ -51,6 +51,7 @@ signals:
     void breakPointList( const BreakPoints & );
     void debuggerStarted( bool );
 private:
+    void restoreBreakpoints();
     void contextMenuEvent(QContextMenuEvent *event);
     void wheelEvent ( QWheelEvent * event );
     void saveLRU(const QString &command);
@@ -62,6 +63,7 @@ private:
     QProcess *process_p;
     QRegExp emacsLineInfoRx ;
     BreakPoints _breakpoints;
+    QRegExp readyRx ;
     QRegExp deleteBreakpointRx ;
     QRegExp newBreakpointRx ;
     QRegExp emacsHaltInfoRx ;
