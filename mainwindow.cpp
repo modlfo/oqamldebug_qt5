@@ -8,6 +8,7 @@
 MainWindow::MainWindow(const QStringList &arguments)
 {
     ocamldebug = NULL;
+    setWindowIcon( QIcon( ":/images/oqamldebug.png" ) );
     help_p = NULL;
     _arguments = arguments;
     if (_arguments.isEmpty())
