@@ -11,6 +11,9 @@
 
 OCamlDebug::OCamlDebug( QWidget *parent_p , const QString &ocamldebug, const QStringList &arguments ) : QPlainTextEdit(parent_p),
     emacsLineInfoRx("^\\x001A\\x001AM([^:]*):([^:]*):([^:]*):([^:\\n]*)\\n*$") ,
+    readyRx("^\\(ocd\\) *") ,
+    deleteBreakpointRx("^Removed breakpoint ([0-9]+) at [0-9]+ : .*$"),
+    newBreakpointRx("^Breakpoint ([0-9]+) at [0-9]+ : file ([^,]*), line ([0-9]+), characters ([0-9]+)-([0-9]+).*$"),
     emacsHaltInfoRx("^\\x001A\\x001AH.*$")
 {
     file_watch_p = NULL;
@@ -304,7 +307,45 @@ void OCamlDebug::startProcess( const QString &program , const QStringList &argum
         clear();
         return;
     }
+
     emit debuggerStarted( true );
+    restoreBreakpoints();
+}
+
+void OCamlDebug::restoreBreakpoints()
+{
+    BreakPoints breakpoints = _breakpoints;
+    _breakpoints.clear();
+    emit breakPointList( _breakpoints );
+
+    for (BreakPoints::const_iterator itBreakpoint = breakpoints.begin() ; itBreakpoint != breakpoints.end() ; ++itBreakpoint )
+    {
+        QFileInfo sourceInfo( itBreakpoint.value().file );
+        QString module = sourceInfo.baseName();
+        module = module.toLower();
+        if (module.length() > 0)
+        {
+            module[0] = module[0].toUpper();
+            QFile f ( itBreakpoint.value().file );
+            if ( f.open( QFile::ReadOnly | QFile::Text ) )
+            {
+                int pos = -1;
+                QString src = f.readAll();
+                for ( int l=1 ; l < itBreakpoint.value().fromLine ; l++ )
+                {
+                   pos = src.indexOf( "\n", pos+1 ); 
+                   if ( pos < 0 )
+                       continue;
+                }
+                pos += itBreakpoint.value().fromColumn;
+
+                QString command = QString("break @ %1 # %2")
+                    .arg(module)
+                    .arg( QString::number( pos ) );
+                debugger( command );
+            }
+        }
+    }
 }
 
 void OCamlDebug::receiveDataFromProcessStdError()
@@ -339,9 +380,46 @@ void OCamlDebug::readChannel()
 
 void OCamlDebug::appendText( const QByteArray &text )
 {
+    bool display = true;
     QString data = QString::fromAscii( text );
-    if ( emacsLineInfoRx.indexIn(data) == 0 )
+    data =  data.remove( readyRx );
+    if ( deleteBreakpointRx.indexIn(data) == 0 )
     {
+        QString _id = deleteBreakpointRx.cap(1);
+        bool ok;
+        int id = _id.toInt(&ok);
+        if (ok)
+        {
+            _breakpoints.remove( id );
+            emit breakPointList( _breakpoints );
+        }
+    }
+    else if ( newBreakpointRx.indexIn(data) == 0 )
+    {
+        BreakPoint breakpoint;
+        QString _id = newBreakpointRx.cap(1);
+        breakpoint.file = newBreakpointRx.cap(2);
+        QString _line = newBreakpointRx.cap(3);
+        QString _from_char = newBreakpointRx.cap(4);
+        QString _to_char = newBreakpointRx.cap(5);
+        bool ok;
+        breakpoint.id = _id.toInt(&ok);
+        if (ok)
+            breakpoint.fromLine = _line.toInt(&ok);
+        breakpoint.toLine = breakpoint.fromLine;
+        if (ok)
+            breakpoint.fromColumn = _from_char.toInt(&ok);
+        if (ok)
+            breakpoint.toColumn = _to_char.toInt(&ok);
+        if (ok)
+        {
+            _breakpoints[ breakpoint.id ] = breakpoint;
+            emit breakPointList( _breakpoints );
+        }
+    }
+    else if ( emacsLineInfoRx.indexIn(data) == 0 )
+    {
+        display = false ;
         QString file = emacsLineInfoRx.cap(1);
         QString start_char_str = emacsLineInfoRx.cap(2);
         QString end_char_str = emacsLineInfoRx.cap(3);
@@ -362,15 +440,17 @@ void OCamlDebug::appendText( const QByteArray &text )
     }
     else if ( emacsHaltInfoRx.exactMatch(data) )
     {
+        display = false ;
         emit stopDebugging( QString() , 0 , 0 , false);
     }
-    else
+
+    if ( display )
     {
         undisplayCommandLine();
         QTextCursor cur = textCursor();
         cur.movePosition(QTextCursor::End, QTextCursor::MoveAnchor) ;
         setTextCursor(cur);
-        cur.insertText(data);
+        cur.insertText(text);
         displayCommandLine();
     }
 }

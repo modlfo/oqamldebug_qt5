@@ -1,6 +1,7 @@
 <!DOCTYPE RCC><RCC version="1.0">
 <qresource>
     <file>readme.html</file>
+    <file>images/oqamldebug.png</file>
     <file>images/debugger.png</file>
     <file>images/copy.png</file>
     <file>images/cut.png</file>

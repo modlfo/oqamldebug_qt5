@@ -3,6 +3,7 @@
 
 #include <QPlainTextEdit>
 #include <QTimer>
+#include "ocamldebug.h"
 #include "ocamlsourcehighlighter.h"
 #include "filesystemwatcher.h"
 class OCamlSourceLineNumberArea ;
@@ -23,6 +24,7 @@ class OCamlSource : public QPlainTextEdit
         int lineNumberAreaWidth();
         bool fromUserLoaded() const { return _from_user_loaded ; }
         void setFromUserLoaded( bool v ) { _from_user_loaded = v ;}
+        void breakPointList( const BreakPoints &b );
 
     signals:
         void debugger( const QString &);
@@ -36,6 +38,7 @@ class OCamlSource : public QPlainTextEdit
             void printVar ( );
             void displayVar ( );
         void markCurrentLocation();
+        void markBreakPoints(bool);
         void fileChanged ( );
         void resizeEvent(QResizeEvent *event);
 
@@ -59,6 +62,7 @@ class OCamlSource : public QPlainTextEdit
         FileSystemWatcher *file_watch_p;
         OCamlSourceLineNumberArea *lineNumberArea;
         bool _from_user_loaded;
+        BreakPoints _breakpoints;
 };
 
 
