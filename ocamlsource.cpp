@@ -351,20 +351,22 @@ void OCamlSource::contextMenuEvent( QContextMenuEvent *event )
 
 void OCamlSource::mousePressEvent ( QMouseEvent * e )
 {
+    QTextCursor current_cur = textCursor();
+    QTextCursor cur = cursorForPosition( e->pos() );
+    if ( current_cur.hasSelection() )
+        cur = current_cur;
+
+    _breapoint_position = cur.position();
+    if ( ! cur.hasSelection() )
+    {
+        cur.select(QTextCursor::WordUnderCursor);
+        setTextCursor(cur);
+    }
+    _selected_text = cur.selectedText();
+    highlighter->searchWord( _selected_text );
+
     if ( e->button() == Qt::MidButton )
     {
-        QTextCursor current_cur = textCursor();
-        QTextCursor cur = cursorForPosition( e->pos() );
-        if ( current_cur.hasSelection() )
-            cur = current_cur;
-
-        _breapoint_position = cur.position();
-        if ( ! cur.hasSelection() )
-        {
-            cur.select(QTextCursor::WordUnderCursor);
-            setTextCursor(cur);
-        }
-        _selected_text = cur.selectedText();
         printVar();
     }
     else

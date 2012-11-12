@@ -9,17 +9,19 @@ OCamlSourceHighlighter::OCamlSourceHighlighter(QTextDocument *parent) : QSyntaxH
     multiLineCommentFormat.setForeground(Qt::gray);
 
 
-    highlightingRules = rules();
+    highlightingRules = rules( QString() );
 }
 
-HighlightingRules OCamlSourceHighlighter::rules()
+HighlightingRules OCamlSourceHighlighter::rules( const QString &w )
 {
+    QTextCharFormat wordFormat;
     QTextCharFormat keywordFormat;
     QTextCharFormat operatorFormat;
     QTextCharFormat multiLineCommentFormat;
     QTextCharFormat quotationFormat;
     HighlightingRules highlightingRules;
     HighlightingRule rule;
+
 
     keywordFormat.setForeground(Qt::darkBlue);
     keywordFormat.setFontWeight(QFont::Bold);
@@ -131,6 +133,17 @@ HighlightingRules OCamlSourceHighlighter::rules()
     rule.format = quotationFormat;
     highlightingRules.append(rule);
 
+    if ( !w.isEmpty() )
+    {
+        wordFormat.setFontWeight(QFont::Bold);
+        wordFormat.setFontUnderline( true );
+        wordFormat.setUnderlineStyle( QTextCharFormat::WaveUnderline );
+        wordFormat.setUnderlineColor( Qt::cyan );
+        rule.pattern = QRegExp( "\\b" + QRegExp::escape( w ) + "\\b" );
+        rule.format = wordFormat;
+        highlightingRules.append(rule);
+    }
+
     return highlightingRules;
 }
 
@@ -170,4 +183,11 @@ void OCamlSourceHighlighter::highlightBlock( const QString &text )
         setFormat( startIndex, commentLength, multiLineCommentFormat );
         startIndex = commentStartExpression.indexIn( text, startIndex + commentLength );
     }
+}
+
+void OCamlSourceHighlighter::searchWord( const QString &w )
+{
+    highlightingRules = rules( w );
+    
+    rehighlight();
 }

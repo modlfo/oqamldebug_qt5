@@ -18,7 +18,7 @@ OCamlDebugHighlighter::OCamlDebugHighlighter(QTextDocument *parent)
     QTextCharFormat dbgInfoFormat;
     HighlightingRule rule;
 
-    highlightingRulesDebugger << OCamlSourceHighlighter::rules();
+    highlightingRulesDebugger << OCamlSourceHighlighter::rules( QString() );
 
     keywordAbrevFormat.setForeground(Qt::darkMagenta);
 
