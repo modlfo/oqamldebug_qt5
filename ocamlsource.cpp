@@ -152,7 +152,26 @@ void OCamlSource::resizeEvent( QResizeEvent *e )
 
     QRect cr = contentsRect();
     lineNumberArea->setGeometry( QRect( cr.left(), cr.top(), lineNumberAreaWidth(), cr.height() ) );
-    lineSearchArea->setGeometry( QRect( cr.left() + lineNumberAreaWidth(), cr.bottom()-lineSearchArea->height(), cr.width()-lineNumberAreaWidth(), lineSearchArea->height() ) );
+    resizeLineSearch();
+}
+
+void OCamlSource::resizeLineSearch()
+{
+    QRect cr = contentsRect();
+    int max_w = cr.width()-lineNumberAreaWidth();
+    int w = lineSearchArea->sizeHint().width();
+    if ( w > max_w )
+        w = max_w ;
+    int h =lineSearchArea->sizeHint().height();
+    int x = cr.right()-w ;
+    int y = cr.bottom()-h;
+    QScrollBar *vert_scrollbar_p = verticalScrollBar();
+    if ( vert_scrollbar_p && vert_scrollbar_p->isVisible() )
+        x -= vert_scrollbar_p->width();
+    QScrollBar *hor_scrollbar_p = horizontalScrollBar();
+    if ( hor_scrollbar_p && hor_scrollbar_p->isVisible())
+        y -= hor_scrollbar_p->height();
+    lineSearchArea->setGeometry( QRect( x, y , w, h ) );
 }
 
 void OCamlSource::lineNumberAreaPaintEvent( QPaintEvent *event )
@@ -521,10 +540,5 @@ void OCamlSourceLineNumberArea::paintEvent( QPaintEvent *event )
 OCamlSourceSearch::OCamlSourceSearch( OCamlSource *editor ) : QLineEdit( editor )
 {
     codeEditor = editor;
-}
-
-QSize OCamlSourceSearch::sizeHint() const
-{
-    return QSize( codeEditor->width(), 0 );
 }
 

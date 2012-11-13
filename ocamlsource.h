@@ -53,6 +53,7 @@ class OCamlSource : public QPlainTextEdit
         void updateLineNumberArea(const QRect &, int);
 
     private:
+        void resizeLineSearch();
         void setCurrentFile(const QString &fileName);
         QString strippedName(const QString &fullFileName);
 
@@ -90,7 +91,6 @@ class OCamlSourceSearch : public QLineEdit
 {
     public:
         OCamlSourceSearch( OCamlSource *editor ) ;
-        QSize sizeHint() const;
 
     private:
         OCamlSource *codeEditor;
