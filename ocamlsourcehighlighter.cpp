@@ -135,10 +135,7 @@ HighlightingRules OCamlSourceHighlighter::rules( const QString &w )
 
     if ( !w.isEmpty() )
     {
-        wordFormat.setFontWeight(QFont::Bold);
-        wordFormat.setFontUnderline( true );
-        wordFormat.setUnderlineStyle( QTextCharFormat::WaveUnderline );
-        wordFormat.setUnderlineColor( Qt::cyan );
+        wordFormat.setBackground( Qt::cyan );
         rule.pattern = QRegExp( "\\b" + QRegExp::escape( w ) + "\\b" );
         rule.format = wordFormat;
         highlightingRules.append(rule);
