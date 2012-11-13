@@ -12,6 +12,13 @@ const static int nb_timer_values = sizeof( timer_values ) / sizeof( int );
 OCamlSource::OCamlSource()
 {
     _from_user_loaded = true;
+    lineSearchArea = new OCamlSourceSearch( this );
+    lineSearchArea->hide();
+    lineSearchArea->setEnabled(false);
+
+    connect( lineSearchArea, SIGNAL( textChanged( const QString & ) ), this, SLOT( searchTextChanged( const QString & ) ) );
+    connect( lineSearchArea, SIGNAL( returnPressed() ), this, SLOT( nextTextSearch() ) );
+
     lineNumberArea = new OCamlSourceLineNumberArea( this );
     connect( this, SIGNAL( blockCountChanged( int ) ), this, SLOT( updateLineNumberAreaWidth( int ) ) );
     connect( this, SIGNAL( updateRequest( QRect, int ) ), this, SLOT( updateLineNumberArea( QRect, int ) ) );
@@ -61,6 +68,40 @@ void OCamlSource::updateLineNumberAreaWidth( int /* newBlockCount */ )
     setViewportMargins( lineNumberAreaWidth(), 0, 0, 0 );
 }
 
+void OCamlSource::searchTextChanged( const QString & )
+{
+    if ( !lineSearchArea->text().isEmpty() )
+    {
+        bool search_matched = toPlainText().contains( lineSearchArea->text() ) ;
+        if ( search_matched )
+            highlighter->searchWord( QRegExp( QRegExp::escape( lineSearchArea->text() ) ) );
+        QPalette palette;
+        if ( search_matched )
+            palette.setColor(lineSearchArea->backgroundRole(), Qt::green );
+        else
+            palette.setColor(lineSearchArea->backgroundRole(), Qt::red );
+        lineSearchArea->setPalette(palette); 
+    }
+}
+
+void OCamlSource::nextTextSearch() 
+{
+    if ( !lineSearchArea->text().isEmpty() )
+    {
+        if ( toPlainText().contains( lineSearchArea->text() ) )
+        {
+            if ( !find( lineSearchArea->text() ) )
+            {
+                QTextCursor cur = textCursor() ;
+                cur.movePosition( QTextCursor::Start );
+                setTextCursor( cur );
+                find( lineSearchArea->text() ) ;
+            }
+            centerCursor();
+        }
+    }
+}
+
 void OCamlSource::updateLineNumberArea( const QRect &rect, int dy )
 {
     if ( dy )
@@ -72,12 +113,46 @@ void OCamlSource::updateLineNumberArea( const QRect &rect, int dy )
         updateLineNumberAreaWidth( 0 );
 }
 
+void OCamlSource::keyPressEvent ( QKeyEvent * e )
+{
+    switch (e->key())
+    {
+        case Qt::Key_Enter:
+            if ( lineSearchArea->isEnabled() )
+            {
+                nextTextSearch();
+            }
+            break;
+        case Qt::Key_Escape:
+            lineSearchArea->hide();
+            lineSearchArea->setEnabled(false);
+            highlighter->searchWord( QRegExp() );
+            break;
+
+        default:
+            {
+                QString input_text = e->text() ;
+                input_text = input_text.simplified();
+                if ( !input_text.isEmpty() )
+                {
+                    lineSearchArea->show();
+                    lineSearchArea->setEnabled(true);
+                    lineSearchArea->setFocus();
+                    lineSearchArea->setText( e->text() );
+                }
+            }
+            break;
+    }
+    e->accept();
+}
+
 void OCamlSource::resizeEvent( QResizeEvent *e )
 {
     QPlainTextEdit::resizeEvent( e );
 
     QRect cr = contentsRect();
     lineNumberArea->setGeometry( QRect( cr.left(), cr.top(), lineNumberAreaWidth(), cr.height() ) );
+    lineSearchArea->setGeometry( QRect( cr.left() + lineNumberAreaWidth(), cr.bottom()-lineSearchArea->height(), cr.width()-lineNumberAreaWidth(), lineSearchArea->height() ) );
 }
 
 void OCamlSource::lineNumberAreaPaintEvent( QPaintEvent *event )
@@ -393,7 +468,22 @@ void OCamlSource::mousePressEvent ( QMouseEvent * e )
         setTextCursor(cur);
     }
     _selected_text = cur.selectedText();
-    highlighter->searchWord( _selected_text );
+    if ( e->button() == Qt::LeftButton )
+    {
+        if ( _selected_text.isEmpty() )
+        {
+            lineSearchArea->hide();
+            lineSearchArea->setEnabled(false);
+            setFocus();
+        }
+        else
+        {
+            lineSearchArea->show();
+            lineSearchArea->setEnabled(true);
+            lineSearchArea->setFocus();
+            lineSearchArea->setText( _selected_text );
+        }
+    }
 
     if ( e->button() == Qt::MidButton )
     {
@@ -409,3 +499,32 @@ void OCamlSource::breakPointList( const BreakPoints &b )
     _breakpoints = b;
     markBreakPoints(false);
 }
+
+
+// Line area
+OCamlSourceLineNumberArea::OCamlSourceLineNumberArea( OCamlSource *editor ) : QWidget( editor )
+{
+    codeEditor = editor;
+}
+
+QSize OCamlSourceLineNumberArea::sizeHint() const
+{
+    return QSize( codeEditor->lineNumberAreaWidth(), 0 );
+}
+
+void OCamlSourceLineNumberArea::paintEvent( QPaintEvent *event )
+{
+    codeEditor->lineNumberAreaPaintEvent( event );
+}
+
+// line search
+OCamlSourceSearch::OCamlSourceSearch( OCamlSource *editor ) : QLineEdit( editor )
+{
+    codeEditor = editor;
+}
+
+QSize OCamlSourceSearch::sizeHint() const
+{
+    return QSize( codeEditor->width(), 0 );
+}
+

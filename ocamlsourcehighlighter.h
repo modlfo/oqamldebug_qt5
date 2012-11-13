@@ -17,9 +17,9 @@ class OCamlSourceHighlighter : public QSyntaxHighlighter
 public:
     OCamlSourceHighlighter(QTextDocument *parent = 0);
 
-    static HighlightingRules rules( const QString & );
+    static HighlightingRules rules( const QRegExp & );
 public slots:
-    void searchWord( const QString & );
+    void searchWord( const QRegExp & );
 protected:
     void highlightBlock(const QString &text);
     

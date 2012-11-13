@@ -9,10 +9,10 @@ OCamlSourceHighlighter::OCamlSourceHighlighter(QTextDocument *parent) : QSyntaxH
     multiLineCommentFormat.setForeground(Qt::gray);
 
 
-    highlightingRules = rules( QString() );
+    highlightingRules = rules( QRegExp() );
 }
 
-HighlightingRules OCamlSourceHighlighter::rules( const QString &w )
+HighlightingRules OCamlSourceHighlighter::rules( const QRegExp &w )
 {
     QTextCharFormat wordFormat;
     QTextCharFormat keywordFormat;
@@ -136,7 +136,7 @@ HighlightingRules OCamlSourceHighlighter::rules( const QString &w )
     if ( !w.isEmpty() )
     {
         wordFormat.setBackground( Qt::cyan );
-        rule.pattern = QRegExp( "\\b" + QRegExp::escape( w ) + "\\b" );
+        rule.pattern = w ;
         rule.format = wordFormat;
         highlightingRules.append(rule);
     }
@@ -182,7 +182,7 @@ void OCamlSourceHighlighter::highlightBlock( const QString &text )
     }
 }
 
-void OCamlSourceHighlighter::searchWord( const QString &w )
+void OCamlSourceHighlighter::searchWord( const QRegExp &w )
 {
     highlightingRules = rules( w );
     

@@ -2,11 +2,13 @@
 #define OCAMLSOURCE_H
 
 #include <QPlainTextEdit>
+#include <QLineEdit>
 #include <QTimer>
 #include "ocamldebug.h"
 #include "ocamlsourcehighlighter.h"
 #include "filesystemwatcher.h"
 class OCamlSourceLineNumberArea ;
+class OCamlSourceSearch ;
 
 class OCamlSource : public QPlainTextEdit
 {
@@ -26,9 +28,13 @@ class OCamlSource : public QPlainTextEdit
         void setFromUserLoaded( bool v ) { _from_user_loaded = v ;}
         void breakPointList( const BreakPoints &b );
 
+    private slots:
+        void searchTextChanged( const QString & ) ;
+        void nextTextSearch() ;
     signals:
         void debugger( const QString &);
     protected:
+        virtual void keyPressEvent ( QKeyEvent * e );
         void closeEvent(QCloseEvent *event);
         void contextMenuEvent(QContextMenuEvent *event);
         void mousePressEvent ( QMouseEvent * e );
@@ -61,6 +67,7 @@ class OCamlSource : public QPlainTextEdit
         int timer_index;
         FileSystemWatcher *file_watch_p;
         OCamlSourceLineNumberArea *lineNumberArea;
+        OCamlSourceSearch *lineSearchArea;
         bool _from_user_loaded;
         BreakPoints _breakpoints;
 };
@@ -69,21 +76,21 @@ class OCamlSource : public QPlainTextEdit
 class OCamlSourceLineNumberArea : public QWidget
 {
     public:
-        OCamlSourceLineNumberArea( OCamlSource *editor ) : QWidget( editor )
-    {
-        codeEditor = editor;
-    }
-
-        QSize sizeHint() const
-        {
-            return QSize( codeEditor->lineNumberAreaWidth(), 0 );
-        }
+        OCamlSourceLineNumberArea( OCamlSource *editor ) ;
+        QSize sizeHint() const;
 
     protected:
-        void paintEvent( QPaintEvent *event )
-        {
-            codeEditor->lineNumberAreaPaintEvent( event );
-        }
+        void paintEvent( QPaintEvent *event );
+
+    private:
+        OCamlSource *codeEditor;
+};
+
+class OCamlSourceSearch : public QLineEdit
+{
+    public:
+        OCamlSourceSearch( OCamlSource *editor ) ;
+        QSize sizeHint() const;
 
     private:
         OCamlSource *codeEditor;
