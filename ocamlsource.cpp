@@ -90,12 +90,12 @@ void OCamlSource::nextTextSearch()
     {
         if ( toPlainText().contains( lineSearchArea->text() ) )
         {
-            if ( !find( lineSearchArea->text() ) )
+            if ( !find( lineSearchArea->text(), QTextDocument::FindCaseSensitively ) )
             {
                 QTextCursor cur = textCursor() ;
                 cur.movePosition( QTextCursor::Start );
                 setTextCursor( cur );
-                find( lineSearchArea->text() ) ;
+                find( lineSearchArea->text(), QTextDocument::FindCaseSensitively ) ;
             }
             centerCursor();
         }
