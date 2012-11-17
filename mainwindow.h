@@ -55,6 +55,7 @@ private slots:
     OCamlSource *createMdiChild();
     void setActiveSubWindow(QWidget *window);
     void stopDebugging( const QString &, int , int , bool) ;
+    void ocamlDebugFocus();
 
 private:
     void createActions();

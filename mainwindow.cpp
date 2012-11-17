@@ -52,7 +52,7 @@ MainWindow::MainWindow(const QStringList &arguments)
 
     setWindowTitle( tr( "OQamlDebug" ) );
     setUnifiedTitleAndToolBarOnMac( true );
-    ocamldebug->setFocus();
+    ocamlDebugFocus();
 }
 
 void MainWindow::createDockWindows()
@@ -105,8 +105,7 @@ void MainWindow::open()
             first =  false;
         }
     }
-    if (ocamldebug)
-        ocamldebug->setFocus();
+    ocamlDebugFocus();
 }
 
 QMdiSubWindow* MainWindow::openOCamlSource(const QString &fileName, bool from_user_loaded)
@@ -337,6 +336,8 @@ OCamlSource *MainWindow::createMdiChild()
     connect( child, SIGNAL( debugger( const QString & ) ),
              ocamldebug, SLOT( debugger( const QString & ) ) );
 
+    connect( child, SIGNAL( releaseFocus() ),
+             this, SLOT( ocamlDebugFocus() ) );
     return child;
 }
 
@@ -640,9 +641,14 @@ void MainWindow::stopDebugging( const QString &file, int start_char, int end_cha
                     mdiChild->stopDebugging( QString(), 0, 0, after) ;
             }
         }
-        if (ocamldebug)
-            ocamldebug->setFocus();
+        ocamlDebugFocus();
     }
+}
+
+void MainWindow::ocamlDebugFocus()
+{
+    if (ocamldebug)
+        ocamldebug->setFocus();
 }
 
 void MainWindow::debugUp()

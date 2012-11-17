@@ -124,9 +124,14 @@ void OCamlSource::keyPressEvent ( QKeyEvent * e )
             }
             break;
         case Qt::Key_Escape:
-            lineSearchArea->hide();
-            lineSearchArea->setEnabled(false);
-            highlighter->searchWord( QRegExp() );
+            if ( lineSearchArea->isEnabled() )
+            {
+                lineSearchArea->hide();
+                lineSearchArea->setEnabled(false);
+                highlighter->searchWord( QRegExp() );
+            }
+            else
+                emit releaseFocus();
             break;
 
         default:
