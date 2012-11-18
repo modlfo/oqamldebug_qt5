@@ -297,6 +297,7 @@ void OCamlDebug::startProcess( const QString &program , const QStringList &argum
 {
     clear();
     _command_queue.clear();
+    _command_queue << "" ;
     process_p =  new QProcess(this) ;
     process_p->setProcessChannelMode(QProcess::MergedChannels);
     connect ( process_p , SIGNAL( readyReadStandardOutput() ) , this , SLOT( receiveDataFromProcessStdOutput()) );
@@ -487,9 +488,11 @@ void OCamlDebug::debugger( const QString & command)
 
 void OCamlDebug::processOneQueuedCommand()
 {
-    if ( !_command_queue.isEmpty() )
+    while ( !_command_queue.isEmpty() )
     {
         QString command = _command_queue.first();
+        if ( command.isEmpty() )
+            continue;
         saveLRU( command );
         _command_line = command ;
         _cursor_position = command.length();;
@@ -500,6 +503,7 @@ void OCamlDebug::processOneQueuedCommand()
         _command_line.clear();
         _command_line_last.clear();
         _cursor_position=0;
+        return;
     }
 }
 
