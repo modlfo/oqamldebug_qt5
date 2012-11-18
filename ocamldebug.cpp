@@ -450,6 +450,11 @@ void OCamlDebug::appendText( const QByteArray &text )
             if (ok)
             {
                 emit stopDebugging( file , start_char , end_char , after );
+                if ( _time >= 0)
+                {
+                    _time_info[blockCount()] = _time ;
+                    updateDebugTimeAreaWidth( 0 );
+                }
             }
         }
     }
@@ -467,6 +472,11 @@ void OCamlDebug::appendText( const QByteArray &text )
     {
         display = false ;
         emit stopDebugging( QString() , 0 , 0 , false);
+        if ( _time >= 0)
+        {
+            _time_info[blockCount()] = _time ;
+            updateDebugTimeAreaWidth( 0 );
+        }
     }
 
     if ( display )
