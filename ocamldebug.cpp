@@ -15,6 +15,7 @@ OCamlDebug::OCamlDebug( QWidget *parent_p , const QString &ocamldebug, const QSt
     deleteBreakpointRx("^Removed breakpoint ([0-9]+) at [0-9]+ : .*$"),
     newBreakpointRx("^Breakpoint ([0-9]+) at [0-9]+ : file ([^,]*), line ([0-9]+), characters ([0-9]+)-([0-9]+).*$"),
     emacsHaltInfoRx("^\\x001A\\x001AH.*$"),
+    timeInfoRx("^Time : ([0-9]+) - pc : ([0-9]+) - .*$"),
     hidden_command("#HIDE#")
 {
     file_watch_p = NULL;
@@ -302,6 +303,8 @@ void OCamlDebug::keyReleaseEvent ( QKeyEvent * e )
 void OCamlDebug::startProcess( const QString &program , const QStringList &arguments )
 {
     clear();
+    _time_info.clear();
+    _time = -1 ;
     _command_queue.clear();
     _command_queue << "" ;
     process_p =  new QProcess(this) ;
@@ -450,6 +453,17 @@ void OCamlDebug::appendText( const QByteArray &text )
             }
         }
     }
+    else if ( timeInfoRx.exactMatch(data) )
+    {
+        QString time = timeInfoRx.cap(1);
+        bool ok;
+        int t = time.toInt(&ok);
+        if ( ok )
+        {
+            display = false ;
+            _time = t;
+        }
+    }
     else if ( emacsHaltInfoRx.exactMatch(data) )
     {
         display = false ;
@@ -459,11 +473,14 @@ void OCamlDebug::appendText( const QByteArray &text )
     if ( display )
     {
         undisplayCommandLine();
+        if ( _time >= 0)
+            _time_info[blockCount()] = _time ;
         QTextCursor cur = textCursor();
         cur.movePosition(QTextCursor::End, QTextCursor::MoveAnchor) ;
         setTextCursor(cur);
         cur.insertText(text);
         displayCommandLine();
+        updateDebugTimeAreaWidth( 0 );
     }
     if ( command_completed )
     {
@@ -623,14 +640,19 @@ void OCamlDebug::updateDebugTimeAreaWidth( int /* newBlockCount */ )
 int OCamlDebug::debugTimeAreaWidth()
 {
     int digits = 1;
-    int max = qMax( 1, blockCount() );
+    int max = 0;
+    for (QMap<int,int>::const_iterator it = _time_info.begin(); it != _time_info.end() ; ++it)
+        max = qMax( max, it.value() );
+
     while ( max >= 10 )
     {
         max /= 10;
         ++digits;
     }
+    if (digits < 4)
+        digits = 4;
 
-    int space = 3 + fontMetrics().width( QLatin1Char( '9' ) ) * digits;
+    int space = 3 + fontMetrics().width( QLatin1Char( 'M' ) ) * digits;
 
     return space;
 }
@@ -647,10 +669,23 @@ void OCamlDebug::debugTimeAreaPaintEvent( QPaintEvent *event )
     {
         if ( block.isVisible() && bottom >= event->rect().top() )
         {
-            QString number = QString::number( blockNumber + 1 );
-            painter.setPen( Qt::black );
-            painter.drawText( 0, top, debugTimeArea->width(), fontMetrics().height(),
-                              Qt::AlignRight, number );
+            if ( blockNumber == 0)
+            {
+                painter.setPen( Qt::black );
+                painter.drawText( 0, top, debugTimeArea->width(), fontMetrics().height(),
+                        Qt::AlignRight, tr( "Time" ) );
+            }
+            else
+            {
+                QMap<int,int>::const_iterator tm = _time_info.find( blockNumber+1 );
+                if ( tm != _time_info.end() )
+                {
+                    QString time = QString::number( tm.value() );
+                    painter.setPen( Qt::black );
+                    painter.drawText( 0, top, debugTimeArea->width(), fontMetrics().height(),
+                            Qt::AlignRight, time );
+                }
+            }
         }
 
         block = block.next();

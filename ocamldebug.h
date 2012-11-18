@@ -75,10 +75,13 @@ private:
     QRegExp deleteBreakpointRx ;
     QRegExp newBreakpointRx ;
     QRegExp emacsHaltInfoRx ;
+    QRegExp timeInfoRx ;
     QString _ocamldebug;
     QString _ocamlapp;
     QStringList _arguments;
     QString _command_line,_command_line_last,_command_line_backup;
+    QMap<int,int> _time_info;
+    int _time;
     int _cursor_position;
     int _lru_position;
     void displayCommandLine();
