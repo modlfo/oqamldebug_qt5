@@ -429,7 +429,7 @@ void MainWindow::createActions()
     connect( aboutQtAct, SIGNAL( triggered() ), qApp, SLOT( aboutQt() ) );
 
     debuggerStartAct = new QAction( QIcon( ":/images/debugger.png" ), tr( "&Start" ), this );
-    debuggerStartAct->setShortcut( QKeySequence("Ctrl+S") );
+    debuggerStartAct->setShortcut( QKeySequence("Ctrl+Shift+S") );
     debuggerStartAct->setCheckable( true );
     debuggerStartAct->setStatusTip( tr( "Start/Stop the ocamldebug process" ) );
     connect( debuggerStartAct, SIGNAL( triggered(bool) ), this, SLOT( debuggerStart(bool) ) );
