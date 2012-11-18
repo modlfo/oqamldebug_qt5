@@ -654,13 +654,13 @@ void MainWindow::ocamlDebugFocus()
 void MainWindow::debugUp()
 {
     if (ocamldebug)
-        ocamldebug->debugger("up",true);
+        ocamldebug->debugger("up",false);
 }
 
 void MainWindow::debugDown()
 {
     if (ocamldebug)
-        ocamldebug->debugger("down",true);
+        ocamldebug->debugger("down",false);
 }
 
 void MainWindow::debugInterrupt()
@@ -672,43 +672,43 @@ void MainWindow::debugInterrupt()
 void MainWindow::debugRun()
 {
     if (ocamldebug)
-        ocamldebug->debugger("run",true);
+        ocamldebug->debugger("run",false);
 }
 
 void MainWindow::debugFinish()
 {
     if (ocamldebug)
-        ocamldebug->debugger("finish",true);
+        ocamldebug->debugger("finish",false);
 }
 
 void MainWindow::debugReverse()
 {
     if (ocamldebug)
-        ocamldebug->debugger("reverse",true);
+        ocamldebug->debugger("reverse",false);
 }
 
 void MainWindow::debugStep()
 {
     if (ocamldebug)
-        ocamldebug->debugger("step",true);
+        ocamldebug->debugger("step",false);
 }
 
 void MainWindow::debugBackStep()
 {
     if (ocamldebug)
-        ocamldebug->debugger("backstep",true);
+        ocamldebug->debugger("backstep",false);
 }
 
 void MainWindow::debugNext()
 {
     if (ocamldebug)
-        ocamldebug->debugger("next",true);
+        ocamldebug->debugger("next",false);
 }
 
 void MainWindow::debugPrevious()
 {
     if (ocamldebug)
-        ocamldebug->debugger("previous",true);
+        ocamldebug->debugger("previous",false);
 }
 
 void MainWindow::breakPointList(const BreakPoints &b)
