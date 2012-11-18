@@ -460,7 +460,6 @@ void OCamlDebug::appendText( const QByteArray &text )
         int t = time.toInt(&ok);
         if ( ok )
         {
-            display = false ;
             _time = t;
         }
     }
