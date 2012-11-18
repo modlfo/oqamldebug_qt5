@@ -18,6 +18,11 @@ OCamlDebug::OCamlDebug( QWidget *parent_p , const QString &ocamldebug, const QSt
     hidden_command("#HIDE#")
 {
     file_watch_p = NULL;
+    debugTimeArea = new OCamlDebugTime( this );
+    connect( this, SIGNAL( blockCountChanged( int ) ), this, SLOT( updateDebugTimeAreaWidth( int ) ) );
+    connect( this, SIGNAL( updateRequest( QRect, int ) ), this, SLOT( updateDebugTimeArea( QRect, int ) ) );
+
+    updateDebugTimeAreaWidth( 0 );
     emit debuggerStarted( false );
     _lru = Options::get_opt_strlst ("OCAMLDEBUG_COMMANDS");
     setReadOnly( false );
@@ -588,5 +593,86 @@ void OCamlDebug::contextMenuEvent(QContextMenuEvent *event)
     menu->exec(event->globalPos());
     setReadOnly(false);
     delete menu;
+}
+
+void OCamlDebug::resizeEvent( QResizeEvent *e )
+{
+    QPlainTextEdit::resizeEvent( e );
+
+    QRect cr = contentsRect();
+    debugTimeArea->setGeometry( QRect( cr.left(), cr.top(), debugTimeAreaWidth(), cr.height() ) );
+}
+
+void OCamlDebug::updateDebugTimeArea( const QRect &rect, int dy )
+{
+    if ( dy )
+        debugTimeArea->scroll( 0, dy );
+    else
+        debugTimeArea->update( 0, rect.y(), debugTimeArea->width(), rect.height() );
+
+    if ( rect.contains( viewport()->rect() ) )
+        updateDebugTimeAreaWidth( 0 );
+}
+
+
+void OCamlDebug::updateDebugTimeAreaWidth( int /* newBlockCount */ )
+{
+    setViewportMargins( debugTimeAreaWidth(), 0, 0, 0 );
+}
+
+int OCamlDebug::debugTimeAreaWidth()
+{
+    int digits = 1;
+    int max = qMax( 1, blockCount() );
+    while ( max >= 10 )
+    {
+        max /= 10;
+        ++digits;
+    }
+
+    int space = 3 + fontMetrics().width( QLatin1Char( '9' ) ) * digits;
+
+    return space;
+}
+
+void OCamlDebug::debugTimeAreaPaintEvent( QPaintEvent *event )
+{
+    QPainter painter( debugTimeArea );
+    painter.fillRect( event->rect(), Qt::lightGray );
+    QTextBlock block = firstVisibleBlock();
+    int blockNumber = block.blockNumber();
+    int top = ( int ) blockBoundingGeometry( block ).translated( contentOffset() ).top();
+    int bottom = top + ( int ) blockBoundingRect( block ).height();
+    while ( block.isValid() && top <= event->rect().bottom() )
+    {
+        if ( block.isVisible() && bottom >= event->rect().top() )
+        {
+            QString number = QString::number( blockNumber + 1 );
+            painter.setPen( Qt::black );
+            painter.drawText( 0, top, debugTimeArea->width(), fontMetrics().height(),
+                              Qt::AlignRight, number );
+        }
+
+        block = block.next();
+        top = bottom;
+        bottom = top + ( int ) blockBoundingRect( block ).height();
+        ++blockNumber;
+    }
+}
+
+
+OCamlDebugTime::OCamlDebugTime( OCamlDebug *d ) : QWidget( d )
+{
+    debugger = d;
+}
+
+QSize OCamlDebugTime::sizeHint() const
+{
+    return QSize( debugger->debugTimeAreaWidth(), 0 );
+}
+
+void OCamlDebugTime::paintEvent( QPaintEvent *event )
+{
+    debugger->debugTimeAreaPaintEvent( event );
 }
 

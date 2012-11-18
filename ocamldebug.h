@@ -19,6 +19,8 @@ struct BreakPoint
 
 typedef QMap<int,BreakPoint> BreakPoints;
 
+class OCamlDebugTime;
+
 class OCamlDebug : public QPlainTextEdit
 {
     Q_OBJECT
@@ -28,9 +30,12 @@ public:
     virtual ~OCamlDebug( );
     void setArguments(const QStringList &);
     void setOCamlDebug(const QString &);
+    int debugTimeAreaWidth();
+    void debugTimeAreaPaintEvent( QPaintEvent *event );
 
 protected:
     void closeEvent(QCloseEvent *event);
+    void resizeEvent(QResizeEvent *event);
 
     virtual void keyPressEvent ( QKeyEvent * e );
     virtual void keyReleaseEvent ( QKeyEvent * e );
@@ -40,6 +45,8 @@ public slots:
     void stopDebug();
     void debuggerInterrupt();
     void debugger( const QString &, bool show_command );
+    void updateDebugTimeAreaWidth(int newBlockCount);
+    void updateDebugTimeArea(const QRect &, int);
 
 private slots:
     void receiveDataFromProcessStdOutput();
@@ -80,6 +87,20 @@ private:
     FileSystemWatcher *file_watch_p;
     QStringList _command_queue;
     const QString hidden_command;
+    OCamlDebugTime *debugTimeArea;
+};
+
+class OCamlDebugTime : public QWidget
+{
+    public:
+        OCamlDebugTime( OCamlDebug *d ) ;
+        QSize sizeHint() const;
+
+    protected:
+        void paintEvent( QPaintEvent *event );
+
+    private:
+        OCamlDebug *debugger;
 };
 
 #endif
