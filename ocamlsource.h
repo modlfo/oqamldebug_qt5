@@ -32,7 +32,7 @@ class OCamlSource : public QPlainTextEdit
         void searchTextChanged( const QString & ) ;
         void nextTextSearch() ;
     signals:
-        void debugger( const QString &);
+        void debugger( const QString &, bool show_command );
         void releaseFocus();
     protected:
         virtual void keyPressEvent ( QKeyEvent * e );

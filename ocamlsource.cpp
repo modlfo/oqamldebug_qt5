@@ -391,7 +391,7 @@ void OCamlSource::fileChanged ( )
 void OCamlSource::displayVar ( )
 {
     QString command = QString("display %1").arg(_selected_text);
-    emit debugger( command );
+    emit debugger( command , true);
     QTextCursor current_cur = textCursor();
     current_cur.clearSelection();
     setTextCursor( current_cur );
@@ -400,7 +400,7 @@ void OCamlSource::displayVar ( )
 void OCamlSource::printVar ( )
 {
     QString command = QString("print %1").arg(_selected_text);
-    emit debugger( command );
+    emit debugger( command , true);
     QTextCursor current_cur = textCursor();
     current_cur.clearSelection();
     setTextCursor( current_cur );
@@ -417,7 +417,7 @@ void OCamlSource::newBreakpoint ( )
         QString command = QString("break @ %1 # %2")
             .arg(module)
             .arg( QString::number( _breapoint_position ) );
-        emit debugger( command );
+        emit debugger( command , true);
     }
 }
 

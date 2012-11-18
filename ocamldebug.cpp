@@ -14,7 +14,8 @@ OCamlDebug::OCamlDebug( QWidget *parent_p , const QString &ocamldebug, const QSt
     readyRx("^\\(ocd\\) *") ,
     deleteBreakpointRx("^Removed breakpoint ([0-9]+) at [0-9]+ : .*$"),
     newBreakpointRx("^Breakpoint ([0-9]+) at [0-9]+ : file ([^,]*), line ([0-9]+), characters ([0-9]+)-([0-9]+).*$"),
-    emacsHaltInfoRx("^\\x001A\\x001AH.*$")
+    emacsHaltInfoRx("^\\x001A\\x001AH.*$"),
+    hidden_command("#HIDE#")
 {
     file_watch_p = NULL;
     emit debuggerStarted( false );
@@ -344,7 +345,7 @@ void OCamlDebug::restoreBreakpoints()
                 QString command = QString("break @ %1 # %2")
                     .arg(module)
                     .arg( QString::number( pos ) );
-                debugger( command );
+                debugger( command, false );
             }
         }
     }
@@ -383,9 +384,12 @@ void OCamlDebug::readChannel()
 void OCamlDebug::appendText( const QByteArray &text )
 {
     bool display = true;
+    if ( !_command_queue.isEmpty() && _command_queue.first().startsWith( hidden_command ) )
+        display = false;
     QString data = QString::fromAscii( text );
     bool command_completed = readyRx.indexIn( data ) >= 0;
     data =  data.remove( readyRx );
+
     if ( deleteBreakpointRx.indexIn(data) == 0 )
     {
         QString _id = deleteBreakpointRx.cap(1);
@@ -475,15 +479,15 @@ void OCamlDebug::debuggerInterrupt()
 #endif
 }
 
-void OCamlDebug::debugger( const QString & command)
+void OCamlDebug::debugger( const QString & command, bool show_command )
 {
-    if ( _command_queue.isEmpty() )
-    {
+    bool empty_queue = _command_queue.isEmpty() ;
+    if ( show_command )
         _command_queue.append( command );
-        processOneQueuedCommand();
-    }
     else
-        _command_queue.append( command );
+        _command_queue.append( hidden_command + command );
+    if ( empty_queue )
+        processOneQueuedCommand();
 }
 
 void OCamlDebug::processOneQueuedCommand()
@@ -493,16 +497,25 @@ void OCamlDebug::processOneQueuedCommand()
         QString command = _command_queue.first();
         if ( command.isEmpty() )
             continue;
-        saveLRU( command );
-        _command_line = command ;
-        _cursor_position = command.length();;
-        displayCommandLine();
-        _command_line += '\n';
-        process_p->write( _command_line.toAscii() );
-        displayCommandLine();
-        _command_line.clear();
-        _command_line_last.clear();
-        _cursor_position=0;
+        bool show_command = !command.startsWith( hidden_command ) ;
+        if ( !show_command )
+            command = command.right( command.length() - hidden_command.length() );
+        if( show_command )
+        {
+            saveLRU( command );
+            _command_line = command ;
+            _cursor_position = command.length();;
+            displayCommandLine();
+            _command_line += '\n';
+        }
+        process_p->write( (command+'\n').toAscii() );
+        if( show_command )
+        {
+            displayCommandLine();
+            _command_line.clear();
+            _command_line_last.clear();
+            _cursor_position=0;
+        }
         return;
     }
 }
@@ -528,9 +541,9 @@ void OCamlDebug::wheelEvent ( QWheelEvent * event )
            )
         {
             if (event->delta() > 0 )
-                debugger( "previous" );
+                debugger( "previous", true );
             else if (event->delta() < 0 )
-                debugger( "next" );
+                debugger( "next" , true);
 
             event->ignore();
         }
@@ -541,9 +554,9 @@ void OCamlDebug::wheelEvent ( QWheelEvent * event )
                 )
         {
             if (event->delta() > 0 )
-                debugger( "backstep" );
+                debugger( "backstep" , true);
             else if (event->delta() < 0 )
-                debugger( "step" );
+                debugger( "step" , true);
 
             event->ignore();
         }
@@ -554,9 +567,9 @@ void OCamlDebug::wheelEvent ( QWheelEvent * event )
                 )
         {
             if (event->delta() > 0 )
-                debugger( "up" );
+                debugger( "up" , true);
             else if (event->delta() < 0 )
-                debugger( "down" );
+                debugger( "down" , true);
 
             event->ignore();
         }

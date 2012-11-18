@@ -333,8 +333,8 @@ OCamlSource *MainWindow::createMdiChild()
     connect( child, SIGNAL( copyAvailable( bool ) ),
              copyAct, SLOT( setEnabled( bool ) ) );
 
-    connect( child, SIGNAL( debugger( const QString & ) ),
-             ocamldebug, SLOT( debugger( const QString & ) ), Qt::QueuedConnection );
+    connect( child, SIGNAL( debugger( const QString &, bool ) ),
+             ocamldebug, SLOT( debugger( const QString &, bool ) ), Qt::QueuedConnection );
 
     connect( child, SIGNAL( releaseFocus() ),
              this, SLOT( ocamlDebugFocus() ) );
@@ -654,13 +654,13 @@ void MainWindow::ocamlDebugFocus()
 void MainWindow::debugUp()
 {
     if (ocamldebug)
-        ocamldebug->debugger("up");
+        ocamldebug->debugger("up",true);
 }
 
 void MainWindow::debugDown()
 {
     if (ocamldebug)
-        ocamldebug->debugger("down");
+        ocamldebug->debugger("down",true);
 }
 
 void MainWindow::debugInterrupt()
@@ -672,43 +672,43 @@ void MainWindow::debugInterrupt()
 void MainWindow::debugRun()
 {
     if (ocamldebug)
-        ocamldebug->debugger("run");
+        ocamldebug->debugger("run",true);
 }
 
 void MainWindow::debugFinish()
 {
     if (ocamldebug)
-        ocamldebug->debugger("finish");
+        ocamldebug->debugger("finish",true);
 }
 
 void MainWindow::debugReverse()
 {
     if (ocamldebug)
-        ocamldebug->debugger("reverse");
+        ocamldebug->debugger("reverse",true);
 }
 
 void MainWindow::debugStep()
 {
     if (ocamldebug)
-        ocamldebug->debugger("step");
+        ocamldebug->debugger("step",true);
 }
 
 void MainWindow::debugBackStep()
 {
     if (ocamldebug)
-        ocamldebug->debugger("backstep");
+        ocamldebug->debugger("backstep",true);
 }
 
 void MainWindow::debugNext()
 {
     if (ocamldebug)
-        ocamldebug->debugger("next");
+        ocamldebug->debugger("next",true);
 }
 
 void MainWindow::debugPrevious()
 {
     if (ocamldebug)
-        ocamldebug->debugger("previous");
+        ocamldebug->debugger("previous",true);
 }
 
 void MainWindow::breakPointList(const BreakPoints &b)

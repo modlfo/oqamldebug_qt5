@@ -39,7 +39,7 @@ public slots:
     void startDebug();
     void stopDebug();
     void debuggerInterrupt();
-    void debugger( const QString &);
+    void debugger( const QString &, bool show_command );
 
 private slots:
     void receiveDataFromProcessStdOutput();
@@ -79,6 +79,7 @@ private:
     QStringList _lru;
     FileSystemWatcher *file_watch_p;
     QStringList _command_queue;
+    const QString hidden_command;
 };
 
 #endif
