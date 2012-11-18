@@ -334,7 +334,7 @@ OCamlSource *MainWindow::createMdiChild()
              copyAct, SLOT( setEnabled( bool ) ) );
 
     connect( child, SIGNAL( debugger( const QString & ) ),
-             ocamldebug, SLOT( debugger( const QString & ) ) );
+             ocamldebug, SLOT( debugger( const QString & ) ), Qt::QueuedConnection );
 
     connect( child, SIGNAL( releaseFocus() ),
              this, SLOT( ocamlDebugFocus() ) );

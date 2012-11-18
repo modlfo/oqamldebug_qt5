@@ -52,6 +52,7 @@ signals:
     void debuggerStarted( bool );
 private:
     void restoreBreakpoints();
+    void processOneQueuedCommand();
     void contextMenuEvent(QContextMenuEvent *event);
     void wheelEvent ( QWheelEvent * event );
     void saveLRU(const QString &command);
@@ -77,6 +78,7 @@ private:
     void undisplayCommandLine();
     QStringList _lru;
     FileSystemWatcher *file_watch_p;
+    QStringList _command_queue;
 };
 
 #endif

@@ -296,6 +296,7 @@ void OCamlDebug::keyReleaseEvent ( QKeyEvent * e )
 void OCamlDebug::startProcess( const QString &program , const QStringList &arguments )
 {
     clear();
+    _command_queue.clear();
     process_p =  new QProcess(this) ;
     process_p->setProcessChannelMode(QProcess::MergedChannels);
     connect ( process_p , SIGNAL( readyReadStandardOutput() ) , this , SLOT( receiveDataFromProcessStdOutput()) );
@@ -382,6 +383,7 @@ void OCamlDebug::appendText( const QByteArray &text )
 {
     bool display = true;
     QString data = QString::fromAscii( text );
+    bool command_completed = readyRx.indexIn( data ) >= 0;
     data =  data.remove( readyRx );
     if ( deleteBreakpointRx.indexIn(data) == 0 )
     {
@@ -453,6 +455,12 @@ void OCamlDebug::appendText( const QByteArray &text )
         cur.insertText(text);
         displayCommandLine();
     }
+    if ( command_completed )
+    {
+        if ( !_command_queue.isEmpty() )
+            _command_queue.removeFirst();
+        processOneQueuedCommand();
+    }
 }
 
 void OCamlDebug::debuggerInterrupt()
@@ -468,16 +476,31 @@ void OCamlDebug::debuggerInterrupt()
 
 void OCamlDebug::debugger( const QString & command)
 {
-    saveLRU( command );
-    _command_line = command ;
-    _cursor_position = command.length();;
-    displayCommandLine();
-    _command_line += '\n';
-    process_p->write( _command_line.toAscii() );
-    displayCommandLine();
-    _command_line.clear();
-    _command_line_last.clear();
-    _cursor_position=0;
+    if ( _command_queue.isEmpty() )
+    {
+        _command_queue.append( command );
+        processOneQueuedCommand();
+    }
+    else
+        _command_queue.append( command );
+}
+
+void OCamlDebug::processOneQueuedCommand()
+{
+    if ( !_command_queue.isEmpty() )
+    {
+        QString command = _command_queue.first();
+        saveLRU( command );
+        _command_line = command ;
+        _cursor_position = command.length();;
+        displayCommandLine();
+        _command_line += '\n';
+        process_p->write( _command_line.toAscii() );
+        displayCommandLine();
+        _command_line.clear();
+        _command_line_last.clear();
+        _cursor_position=0;
+    }
 }
 
 void OCamlDebug::saveLRU(const QString &command)
