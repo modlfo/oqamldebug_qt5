@@ -704,13 +704,13 @@ void OCamlDebug::debugTimeAreaPaintEvent( QPaintEvent *event )
     }
 }
 
-
 OCamlDebugTime::OCamlDebugTime( OCamlDebug *d ) : QWidget( d )
 {
     debugger = d;
     QPalette palette;
     palette.setColor(backgroundRole(), Qt::white);
     setPalette(palette);
+    setMouseTracking( true );
 }
 
 QSize OCamlDebugTime::sizeHint() const
@@ -721,5 +721,40 @@ QSize OCamlDebugTime::sizeHint() const
 void OCamlDebugTime::paintEvent( QPaintEvent *event )
 {
     debugger->debugTimeAreaPaintEvent( event );
+}
+
+void OCamlDebugTime::mouseDoubleClickEvent ( QMouseEvent * event )
+{
+    QTextCursor cur = debugger->cursorForPosition( event->pos() );
+    QMap<int,int>::const_iterator tm = debugger->timeInfo().find( cur.blockNumber()+1 );
+    if ( tm != debugger->timeInfo().end() )
+    {
+        int time = tm.value();
+        debugger->debugger( "goto " + QString::number(time), false );
+    }
+    QWidget::mouseMoveEvent( event );
+}
+
+bool OCamlDebugTime::event(QEvent *event)
+{
+    if (event->type() == QEvent::ToolTip)
+    {
+        QHelpEvent *helpEvent = static_cast<QHelpEvent *>(event);
+        QTextCursor cur = debugger->cursorForPosition( helpEvent->pos() );
+        QMap<int,int>::const_iterator tm = debugger->timeInfo().find( cur.blockNumber()+1 );
+        if ( tm != debugger->timeInfo().end() )
+        {
+            int time = tm.value();
+            QToolTip::showText(helpEvent->globalPos(), tr( "Double-click to return to the execution time %1" ).arg( QString::number( time ) ) ) ;
+        } 
+        else
+        {
+            QToolTip::hideText();
+            event->ignore();
+        }
+
+        return true;
+    }
+    return QWidget::event(event);
 }
 

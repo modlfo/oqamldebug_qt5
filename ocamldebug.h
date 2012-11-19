@@ -32,6 +32,7 @@ public:
     void setOCamlDebug(const QString &);
     int debugTimeAreaWidth();
     void debugTimeAreaPaintEvent( QPaintEvent *event );
+    const QMap<int,int> & timeInfo() const { return _time_info; }
 
 protected:
     void closeEvent(QCloseEvent *event);
@@ -101,6 +102,8 @@ class OCamlDebugTime : public QWidget
 
     protected:
         void paintEvent( QPaintEvent *event );
+        void mouseDoubleClickEvent ( QMouseEvent * event );
+        bool event(QEvent *event);
 
     private:
         OCamlDebug *debugger;
