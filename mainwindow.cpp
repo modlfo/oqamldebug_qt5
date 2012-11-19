@@ -446,12 +446,12 @@ void MainWindow::createActions()
 
     debugNextAct = new QAction( QIcon( ":/images/debug-next.png" ), tr( "&Next" ), this );
     debugNextAct->setShortcut( QKeySequence("Ctrl+N") );
-    debugNextAct->setStatusTip( tr( "Step over" ) );
+    debugNextAct->setStatusTip( tr( "Step over (Mouse Wheel with Ctrl)" ) );
     connect( debugNextAct, SIGNAL( triggered() ), this, SLOT( debugNext() ) );
 
     debugPreviousAct = new QAction( QIcon( ":/images/debug-previous.png" ), tr( "&Previous" ), this );
     debugPreviousAct->setShortcut( QKeySequence("Ctrl+P") );
-    debugPreviousAct->setStatusTip( tr( "Back step over" ) );
+    debugPreviousAct->setStatusTip( tr( "Back step over (Mouse Wheel with Ctrl)" ) );
     connect( debugPreviousAct, SIGNAL( triggered() ), this, SLOT( debugPrevious() ) );
 
     debugFinishAct = new QAction( QIcon( ":/images/debug-finish.png" ), tr( "&Finish" ), this );
@@ -461,12 +461,12 @@ void MainWindow::createActions()
 
     debugBackStepAct = new QAction( QIcon( ":/images/debug-backstep.png" ), tr( "&Back Step" ), this );
     debugBackStepAct->setShortcut( QKeySequence("Ctrl+B") );
-    debugBackStepAct->setStatusTip( tr( "Step into" ) );
+    debugBackStepAct->setStatusTip( tr( "Step into (Mouse Wheel with Shift)" ) );
     connect( debugBackStepAct, SIGNAL( triggered() ), this, SLOT( debugBackStep() ) );
 
     debugStepAct = new QAction( QIcon( ":/images/debug-step.png" ), tr( "&Step" ), this );
     debugStepAct->setShortcut( QKeySequence("Ctrl+S") );
-    debugStepAct->setStatusTip( tr( "Back step into" ) );
+    debugStepAct->setStatusTip( tr( "Back step into (Mouse Wheel with Shift)" ) );
     connect( debugStepAct, SIGNAL( triggered() ), this, SLOT( debugStep() ) );
 
     debugInterruptAct = new QAction( QIcon( ":/images/debug-interrupt.png" ), tr( "&Interrupt" ), this );
@@ -477,13 +477,13 @@ void MainWindow::createActions()
 
     debugDownAct = new QAction( QIcon( ":/images/debug-down.png" ), tr( "&Down" ), this );
     debugDownAct->setShortcut(  QKeySequence("Ctrl+D") );
-    debugDownAct->setStatusTip( tr( "Call stack down" ) );
+    debugDownAct->setStatusTip( tr( "Call stack down (Mouse Wheel with Shift+Ctrl)" ) );
     connect( debugDownAct, SIGNAL( triggered() ), this, SLOT( debugDown() ) );
 
 
     debugUpAct = new QAction( QIcon( ":/images/debug-up.png" ), tr( "&Up" ), this );
     debugUpAct->setShortcut( QKeySequence("Ctrl+U") );
-    debugUpAct->setStatusTip( tr( "Call stack up" ) );
+    debugUpAct->setStatusTip( tr( "Call stack up (Mouse Wheel with Shift+Ctrl)" ) );
     connect( debugUpAct, SIGNAL( triggered() ), this, SLOT( debugUp() ) );
 
 }

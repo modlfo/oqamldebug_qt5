@@ -572,9 +572,9 @@ void OCamlDebug::wheelEvent ( QWheelEvent * event )
            )
         {
             if (event->delta() > 0 )
-                debugger( "previous", true );
+                debugger( "previous", false );
             else if (event->delta() < 0 )
-                debugger( "next" , true);
+                debugger( "next" , false);
 
             event->ignore();
         }
@@ -585,9 +585,9 @@ void OCamlDebug::wheelEvent ( QWheelEvent * event )
                 )
         {
             if (event->delta() > 0 )
-                debugger( "backstep" , true);
+                debugger( "backstep" , false);
             else if (event->delta() < 0 )
-                debugger( "step" , true);
+                debugger( "step" , false);
 
             event->ignore();
         }
@@ -598,9 +598,9 @@ void OCamlDebug::wheelEvent ( QWheelEvent * event )
                 )
         {
             if (event->delta() > 0 )
-                debugger( "up" , true);
+                debugger( "up" , false);
             else if (event->delta() < 0 )
-                debugger( "down" , true);
+                debugger( "down" , false);
 
             event->ignore();
         }
