@@ -229,10 +229,7 @@ void OCamlDebug::keyPressEvent ( QKeyEvent * e )
                          _command_line =  _lru.last();
                          _cursor_position = _command_line.length();
                      }
-                     saveLRU( _command_line );
-                     _command_line += '\n';
-                     process_p->write( _command_line.toAscii() );
-                     displayCommandLine();
+                     debugger( _command_line, true );
                      _command_line.clear();
                      _command_line_last.clear();
                      _cursor_position=0;
