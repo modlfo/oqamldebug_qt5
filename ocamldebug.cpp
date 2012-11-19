@@ -658,6 +658,7 @@ int OCamlDebug::debugTimeAreaWidth()
         max /= 10;
         ++digits;
     }
+    digits+=1;
     if (digits < 4)
         digits = 4;
 
@@ -669,7 +670,7 @@ int OCamlDebug::debugTimeAreaWidth()
 void OCamlDebug::debugTimeAreaPaintEvent( QPaintEvent *event )
 {
     QPainter painter( debugTimeArea );
-    painter.fillRect( event->rect(), Qt::lightGray );
+    painter.fillRect( event->rect(), Qt::white );
     QTextBlock block = firstVisibleBlock();
     int blockNumber = block.blockNumber();
     int top = ( int ) blockBoundingGeometry( block ).translated( contentOffset() ).top();
@@ -678,19 +679,18 @@ void OCamlDebug::debugTimeAreaPaintEvent( QPaintEvent *event )
     {
         if ( block.isVisible() && bottom >= event->rect().top() )
         {
+            painter.setPen( Qt::gray );
             if ( blockNumber == 0)
             {
-                painter.setPen( Qt::black );
                 painter.drawText( 0, top, debugTimeArea->width(), fontMetrics().height(),
-                        Qt::AlignRight, tr( "Time" ) );
+                        Qt::AlignCenter, tr( "Time" ) );
             }
             else
             {
                 QMap<int,int>::const_iterator tm = _time_info.find( blockNumber+1 );
                 if ( tm != _time_info.end() )
                 {
-                    QString time = QString::number( tm.value() );
-                    painter.setPen( Qt::black );
+                    QString time = QString::number( tm.value() ) + ":";
                     painter.drawText( 0, top, debugTimeArea->width(), fontMetrics().height(),
                             Qt::AlignRight, time );
                 }
@@ -708,6 +708,9 @@ void OCamlDebug::debugTimeAreaPaintEvent( QPaintEvent *event )
 OCamlDebugTime::OCamlDebugTime( OCamlDebug *d ) : QWidget( d )
 {
     debugger = d;
+    QPalette palette;
+    palette.setColor(backgroundRole(), Qt::white);
+    setPalette(palette);
 }
 
 QSize OCamlDebugTime::sizeHint() const
