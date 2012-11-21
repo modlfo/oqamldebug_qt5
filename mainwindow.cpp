@@ -61,7 +61,7 @@ void MainWindow::createDockWindows()
 {
     ocamldebug_dock = new QDockWidget( tr( "OCamlDebug" ), this );
     ocamldebug_dock->setAllowedAreas( Qt::TopDockWidgetArea | Qt::BottomDockWidgetArea | Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea );
-    ocamldebug = new OCamlDebug( this , _ocamldebug, _arguments);
+    ocamldebug = new OCamlDebug( ocamldebug_dock , _ocamldebug, _arguments);
     ocamldebug_dock->setObjectName("OCamlDebugDock");
     connect ( ocamldebug , SIGNAL( stopDebugging( const QString &, int , int , bool) ) , this ,SLOT( stopDebugging( const QString &, int , int , bool) ) );
     connect ( ocamldebug , SIGNAL( debuggerStarted( bool) ) , this ,SLOT( debuggerStarted( bool) ) );
@@ -71,48 +71,56 @@ void MainWindow::createDockWindows()
     windowMenu->addAction( ocamldebug_dock->toggleViewAction() );
 
     ocamldebug->startDebug();
+
+    QList<int> watch_ids = Options::get_opt_intlst( "WATCH_IDS" );
+    for (QList<int>::const_iterator itId = watch_ids.begin(); itId != watch_ids.end(); ++itId)
+        createWatchWindow( *itId );
 }
 
 void MainWindow::createWatchWindow()
 {
     int watch_id ;
-    for ( watch_id=1 ; ; watch_id++ )
+    for ( watch_id=1 ; watch_id < 10; watch_id++ )
     {
         if ( !_watch_ids.contains( watch_id ) )
-            break;
+        {
+            createWatchWindow( watch_id );
+            return;
+        }
     }
+}
+
+void MainWindow::createWatchWindow( int watch_id )
+{
     _watch_ids << watch_id ;
 
     QDockWidget *dock = new QDockWidget( tr( "Watch %1" ).arg( QString::number(watch_id) ), this );
+    dock->setAttribute( Qt::WA_DeleteOnClose );
     dock->setAllowedAreas( Qt::TopDockWidgetArea | Qt::BottomDockWidgetArea | Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea );
-    OCamlWatch *ocamlwatch = new OCamlWatch( this, watch_id );
+    OCamlWatch *ocamlwatch = new OCamlWatch( dock, watch_id );
     connect ( ocamldebug , SIGNAL( stopDebugging( const QString &, int , int , bool) ) , ocamlwatch ,SLOT( stopDebugging( const QString &, int , int , bool) ) );
     connect ( ocamldebug , SIGNAL( debuggerCommand( const QString &, const QString &) ) , ocamlwatch ,SLOT( debuggerCommand( const QString &, const QString &) ) );
     connect( ocamlwatch, SIGNAL( debugger( const QString &, bool ) ), ocamldebug, SLOT( debugger( const QString &, bool ) ), Qt::QueuedConnection );
-    connect ( dock , SIGNAL( visibilityChanged( bool) ) , this ,SLOT( watchWindowVisibility( bool) ) );
-    dock->setObjectName(QString("OCamlWatch%1").arg( QString::number(watch_id) ));
+    connect( ocamlwatch, SIGNAL( destroyed( QObject* ) ), this, SLOT( watchWindowDestroyed( QObject* ) ) );
+    dock->setObjectName(QString("OCamlWatchDock%1").arg( QString::number(watch_id) ));
     dock->setWidget( ocamlwatch );
     addDockWidget( Qt::BottomDockWidgetArea, dock );
 
     _watch_windows.append( ocamlwatch );
+    Options::set_opt( "WATCH_IDS", _watch_ids );
 }
 
-void MainWindow::watchWindowVisibility( bool visible )
+void MainWindow::watchWindowDestroyed( QObject *o )
 {
-    if ( !visible )
+    OCamlWatch *watch = static_cast<OCamlWatch*>( o );
+    if ( watch )
     {
-        QDockWidget *dock = dynamic_cast<QDockWidget*>(sender());
-        if ( dock )
+        if ( _watch_windows.contains( watch ) )
         {
-            OCamlWatch *watch = dynamic_cast<OCamlWatch*>(dock->widget());
-            if ( watch )
-            {
-                watch->disconnect();
-                _watch_ids.removeAll( watch->id );
-                _watch_windows.removeAll( watch );
-                removeDockWidget( dock );
-                //delete dock;
-            }
+            qDebug() << "destroyed" << watch->id ;
+            _watch_ids.removeAll( watch->id );
+            _watch_windows.removeAll( watch );
+            Options::set_opt( "WATCH_IDS", _watch_ids );
         }
     }
 }

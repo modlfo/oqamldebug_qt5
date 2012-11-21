@@ -108,6 +108,20 @@ bool Options::get_opt_bool ( const QString &opt, bool def )
 }
 
 
+QList<int> Options::get_opt_intlst ( const QString &opt, const QList<int> &def )
+{
+    QStringList defs;
+    for (QList<int>::const_iterator itDef = def.begin(); itDef != def.end(); ++itDef )
+        defs << QString::number( *itDef );
+    QStringList rets = get_opt_strlst( opt, defs );
+
+    QList<int> ret;
+    for (QStringList::const_iterator itStr = rets.begin(); itStr != rets.end(); ++itStr )
+        ret << itStr->toInt();
+
+    return ret;
+}
+
 QStringList Options::get_opt_strlst ( const QString &opt, const QStringList &def )
 {
     QString         opt_str = option( opt );
@@ -194,6 +208,14 @@ void Options::set_opt ( const QString &opt, const QStringList &val )
     QString         opt_str = option( opt );
     if ( settings_p )
         settings_p->setValue ( opt_str, val );
+}
+
+void Options::set_opt ( const QString &opt, const QList<int> &val )
+{
+    QStringList vals;
+    for (QList<int>::const_iterator itVal = val.begin(); itVal != val.end(); ++itVal )
+        vals << QString::number( *itVal );
+    set_opt( opt, vals );
 }
 
 

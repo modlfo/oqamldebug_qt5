@@ -29,6 +29,7 @@ public:
 signals:
     bool debugger( const QString &, bool ) ;
 public slots:
+    void updateWatches();
     void watch( const QString & v, bool display );
     void stopDebugging( const QString &, int , int , bool) ;
     void  debuggerCommand( const QString &, const QString &);
@@ -36,12 +37,14 @@ protected:
     void closeEvent(QCloseEvent *event);
 
 private:
-    void updateWatches();
     QList<Watch> _watches ;
     QString command (const Watch & ) const;
     void contextMenuEvent(QContextMenuEvent *event);
     void clearData();
     OCamlSourceHighlighter *highlighter;
+    QStringList  variables() const;
+    void saveWatches();
+    void restoreWatches();
 };
 
 #endif

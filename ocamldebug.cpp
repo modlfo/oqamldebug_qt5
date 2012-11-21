@@ -317,8 +317,9 @@ void OCamlDebug::startProcess( const QString &program , const QStringList &argum
         return;
     }
 
-    emit debuggerStarted( true );
+    debugger( "goto 0", false );
     restoreBreakpoints();
+    emit debuggerStarted( true );
 }
 
 void OCamlDebug::restoreBreakpoints()

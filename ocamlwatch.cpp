@@ -6,7 +6,9 @@
 
 OCamlWatch::OCamlWatch( QWidget *parent_p, int i ) : QTextEdit(parent_p), id(i)
 {
+    setObjectName(QString("OCamlWatch%1").arg( QString::number(id) ));
     clearData();
+
     setReadOnly( true );
     setUndoRedoEnabled( false );
     setAttribute(Qt::WA_DeleteOnClose);
@@ -14,6 +16,8 @@ OCamlWatch::OCamlWatch( QWidget *parent_p, int i ) : QTextEdit(parent_p), id(i)
     QFont font("Monospace");
     font.setStyleHint(QFont::TypeWriter);
     setFont(font);
+
+    restoreWatches();
 }
 
 OCamlWatch::~OCamlWatch()
@@ -25,6 +29,33 @@ void OCamlWatch::clearData()
 {
     clear();
     _watches.clear();
+}
+
+void OCamlWatch::saveWatches()
+{
+    QStringList sav;
+    for (QList<Watch>::const_iterator itWatch = _watches.begin() ; itWatch != _watches.end() ; ++itWatch )
+    {
+        sav << itWatch->variable ;
+        if ( itWatch->display )
+            sav << "1";
+        else
+            sav << "0";
+    }
+    Options::set_opt( objectName()+"_VARIABLES", sav );
+}
+
+void OCamlWatch::restoreWatches()
+{
+    QStringList vars = Options::get_opt_strlst( objectName()+"_VARIABLES" );
+    qDebug() << vars;
+    for (QStringList::const_iterator itVar = vars.begin(); itVar != vars.end() ; ++itVar)
+    {
+        QString variable = *itVar;
+        ++itVar;
+        bool displayed = itVar->toInt() != 0;
+        watch( variable, displayed );
+    }
 }
 
 void OCamlWatch::closeEvent(QCloseEvent *event)
@@ -41,11 +72,18 @@ void OCamlWatch::contextMenuEvent(QContextMenuEvent *event)
 
 void OCamlWatch::watch( const QString &variable, bool display ) 
 {
+    if ( variable.isEmpty() )
+        return ;
+
+    if ( variables().contains( variable ) )
+        return ;
+
     Watch w;
     w.variable = variable;
     w.display = display;
     _watches.append( w );
     updateWatches();
+    saveWatches();
 }
 
 QString OCamlWatch::command( const Watch &watch ) const
@@ -88,4 +126,12 @@ void  OCamlWatch::debuggerCommand( const QString &cmd, const QString &result)
             insertHtml( text );
         }
     }
+}
+
+QStringList  OCamlWatch::variables() const
+{
+    QStringList ret;
+    for (QList<Watch>::const_iterator itWatch = _watches.begin() ; itWatch != _watches.end() ; ++itWatch )
+        ret << itWatch->variable ;
+    return ret;
 }

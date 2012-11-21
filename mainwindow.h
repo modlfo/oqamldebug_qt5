@@ -58,11 +58,12 @@ private slots:
     void stopDebugging( const QString &, int , int , bool) ;
     void ocamlDebugFocus();
     void createWatchWindow();
-    void watchWindowVisibility( bool visible );
+    void watchWindowDestroyed( QObject* );
     void displayVariable( const QString & );
     void printVariable( const QString & );
 
 private:
+    void createWatchWindow( int watch_id );
     void createActions();
     void createMenus();
     void createToolBars();

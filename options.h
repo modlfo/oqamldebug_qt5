@@ -28,12 +28,14 @@ class Options
      static QString         get_opt_str (const QString&,const QString &def=QString::null);
      static QByteArray      get_opt_array (const QString&,const QByteArray &def=QByteArray());
      static QStringList     get_opt_strlst (const QString&,const QStringList &def=QStringList());
+     static QList<int>      get_opt_intlst ( const QString &opt, const QList<int> &def=QList<int>() );
      static void            set_opt (const QString&, double);
      static void            set_opt (const QString&, long);
      static void            set_opt (const QString&, int);
      static void            set_opt (const QString&, bool);
      static void            set_opt (const QString&,const  QString &);
      static void            set_opt (const QString&,const  QStringList &);
+     static void            set_opt (const QString&,const  QList<int> &);
      static void            set_opt (const QString&,const  QByteArray &);
 };
 #endif
