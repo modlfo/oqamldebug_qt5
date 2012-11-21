@@ -58,6 +58,7 @@ signals:
     void stopDebugging( const QString &, int , int , bool);
     void breakPointList( const BreakPoints & );
     void debuggerStarted( bool );
+    void debuggerCommand( const QString & command, const QString & result );
 private:
     void restoreBreakpoints();
     void processOneQueuedCommand();
@@ -90,7 +91,8 @@ private:
     QStringList _lru;
     FileSystemWatcher *file_watch_p;
     QStringList _command_queue;
-    const QString hidden_command;
+    const QString _hidden_command;
+    QString _command_response ;
     OCamlDebugTime *debugTimeArea;
 };
 

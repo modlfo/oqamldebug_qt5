@@ -3,11 +3,13 @@
 #include "options.h"
 #include "ocamlsource.h"
 #include "ocamldebug.h"
+#include "ocamlwatch.h"
 #include <QFileInfo>
 
 MainWindow::MainWindow(const QStringList &arguments)
 {
     ocamldebug = NULL;
+    ocamldebug_dock  = NULL;
     setWindowIcon( QIcon( ":/images/oqamldebug.png" ) );
     help_p = NULL;
     _arguments = arguments;
@@ -57,18 +59,62 @@ MainWindow::MainWindow(const QStringList &arguments)
 
 void MainWindow::createDockWindows()
 {
-    QDockWidget *dock = new QDockWidget( tr( "OCamlDebug" ), this );
-    dock->setAllowedAreas( Qt::TopDockWidgetArea | Qt::BottomDockWidgetArea | Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea );
+    ocamldebug_dock = new QDockWidget( tr( "OCamlDebug" ), this );
+    ocamldebug_dock->setAllowedAreas( Qt::TopDockWidgetArea | Qt::BottomDockWidgetArea | Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea );
     ocamldebug = new OCamlDebug( this , _ocamldebug, _arguments);
-    dock->setObjectName("OCamlDebugDock");
+    ocamldebug_dock->setObjectName("OCamlDebugDock");
     connect ( ocamldebug , SIGNAL( stopDebugging( const QString &, int , int , bool) ) , this ,SLOT( stopDebugging( const QString &, int , int , bool) ) );
     connect ( ocamldebug , SIGNAL( debuggerStarted( bool) ) , this ,SLOT( debuggerStarted( bool) ) );
     connect ( ocamldebug , SIGNAL( breakPointList( const BreakPoints &) ) , this ,SLOT( breakPointList( const BreakPoints &) ) );
-    dock->setWidget( ocamldebug );
-    addDockWidget( Qt::BottomDockWidgetArea, dock );
-    mainMenu->addAction( dock->toggleViewAction() );
+    ocamldebug_dock->setWidget( ocamldebug );
+    addDockWidget( Qt::BottomDockWidgetArea, ocamldebug_dock );
+    windowMenu->addAction( ocamldebug_dock->toggleViewAction() );
 
     ocamldebug->startDebug();
+}
+
+void MainWindow::createWatchWindow()
+{
+    int watch_id ;
+    for ( watch_id=1 ; ; watch_id++ )
+    {
+        if ( !_watch_ids.contains( watch_id ) )
+            break;
+    }
+    _watch_ids << watch_id ;
+
+    QDockWidget *dock = new QDockWidget( tr( "Watch %1" ).arg( QString::number(watch_id) ), this );
+    dock->setAllowedAreas( Qt::TopDockWidgetArea | Qt::BottomDockWidgetArea | Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea );
+    OCamlWatch *ocamlwatch = new OCamlWatch( this, watch_id );
+    connect ( ocamldebug , SIGNAL( stopDebugging( const QString &, int , int , bool) ) , ocamlwatch ,SLOT( stopDebugging( const QString &, int , int , bool) ) );
+    connect ( ocamldebug , SIGNAL( debuggerCommand( const QString &, const QString &) ) , ocamlwatch ,SLOT( debuggerCommand( const QString &, const QString &) ) );
+    connect( ocamlwatch, SIGNAL( debugger( const QString &, bool ) ), ocamldebug, SLOT( debugger( const QString &, bool ) ), Qt::QueuedConnection );
+    connect ( dock , SIGNAL( visibilityChanged( bool) ) , this ,SLOT( watchWindowVisibility( bool) ) );
+    dock->setObjectName(QString("OCamlWatch%1").arg( QString::number(watch_id) ));
+    dock->setWidget( ocamlwatch );
+    addDockWidget( Qt::BottomDockWidgetArea, dock );
+
+    _watch_windows.append( ocamlwatch );
+}
+
+void MainWindow::watchWindowVisibility( bool visible )
+{
+    if ( !visible )
+    {
+        QDockWidget *dock = dynamic_cast<QDockWidget*>(sender());
+        if ( dock )
+        {
+            OCamlWatch *watch = dynamic_cast<OCamlWatch*>(dock->widget());
+            if ( watch )
+            {
+                watch->disconnect();
+                _watch_ids.removeAll( watch->id );
+                _watch_windows.removeAll( watch );
+                removeDockWidget( dock );
+                //delete dock;
+            }
+        }
+    }
 }
 
 void MainWindow::closeEvent( QCloseEvent *event )
@@ -289,8 +335,14 @@ void MainWindow::updateWindowMenu()
     windowMenu->addSeparator();
     windowMenu->addAction( nextAct );
     windowMenu->addAction( previousAct );
-    windowMenu->addAction( separatorAct );
 
+    if ( ocamldebug_dock )
+    {
+        windowMenu->addSeparator();
+        windowMenu->addAction( ocamldebug_dock->toggleViewAction() );
+    }
+
+    windowMenu->addAction( separatorAct );
     QList<QMdiSubWindow *> windows = mdiArea->subWindowList();
     separatorAct->setVisible( !windows.isEmpty() );
 
@@ -334,10 +386,17 @@ OCamlSource *MainWindow::createMdiChild()
              copyAct, SLOT( setEnabled( bool ) ) );
 
     connect( child, SIGNAL( debugger( const QString &, bool ) ),
-             ocamldebug, SLOT( debugger( const QString &, bool ) ), Qt::QueuedConnection );
+             ocamldebug, SLOT( debugger( const QString &, bool ) ), Qt::QueuedConnection  );
 
     connect( child, SIGNAL( releaseFocus() ),
              this, SLOT( ocamlDebugFocus() ) );
+
+    connect( child, SIGNAL( printVariable( const QString & ) ),
+             this, SLOT( printVariable( const QString & ) ) );
+
+    connect( child, SIGNAL( displayVariable( const QString & ) ),
+             this, SLOT( displayVariable( const QString & ) ) );
+
     return child;
 }
 
@@ -354,6 +413,11 @@ void MainWindow::createActions()
     setOcamlDebugArgsAct = new QAction(  tr( "&Command Line Arguments..." ), this );
     setOcamlDebugArgsAct->setStatusTip( tr( "Set OCamlDebug command line arguments" ) );
     connect( setOcamlDebugArgsAct, SIGNAL( triggered() ), this, SLOT( setOCamlDebugArgs() ) );
+
+    createWatchWindowAct = new QAction( QIcon( ), tr( "&Create Watch Window..." ), this );
+    createWatchWindowAct->setShortcut( QKeySequence("Ctrl+W") );
+    createWatchWindowAct->setStatusTip( tr( "Create a variable watch window" ) );
+    connect( createWatchWindowAct, SIGNAL( triggered() ), this, SLOT( createWatchWindow() ) );
 
     openAct = new QAction( QIcon( ":/images/open.png" ), tr( "&Open OCaml Source..." ), this );
     openAct->setShortcuts( QKeySequence::Open );
@@ -508,8 +572,11 @@ void MainWindow::createMenus()
     debugMenu->addAction( debugFinishAct );
     debugMenu->addAction( debugRunAct );
     debugMenu->addAction( debugInterruptAct );
+    debugMenu->addSeparator();
     debugMenu->addAction( debugDownAct );
     debugMenu->addAction( debugUpAct );
+    debugMenu->addSeparator();
+    debugMenu->addAction( createWatchWindowAct );
 
     editMenu = menuBar()->addMenu( tr( "&Edit" ) );
     editMenu->addAction( copyAct );
@@ -734,6 +801,34 @@ void MainWindow::debuggerStart(bool b)
             ocamldebug->startDebug();
         else
             ocamldebug->stopDebug();
+    }
+}
+
+void MainWindow::displayVariable( const QString &val )
+{
+    if ( ocamldebug )
+    {
+        if ( _watch_windows.isEmpty() )
+        {
+            QString command = QString("display %1").arg(val);
+            ocamldebug->debugger( command , true);
+        }
+        else
+            _watch_windows.last()->watch( val, true );
+    }
+}
+
+void MainWindow::printVariable( const QString &val )
+{
+    if ( ocamldebug )
+    {
+        if ( _watch_windows.isEmpty() )
+        {
+            QString command = QString("print %1").arg(val);
+            ocamldebug->debugger( command , true);
+        }
+        else
+            _watch_windows.last()->watch( val, false );
     }
 }
 

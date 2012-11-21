@@ -33,6 +33,8 @@ class OCamlSource : public QPlainTextEdit
         void nextTextSearch() ;
     signals:
         void debugger( const QString &, bool show_command );
+        void displayVariable( const QString & );
+        void printVariable( const QString & );
         void releaseFocus();
     protected:
         virtual void keyPressEvent ( QKeyEvent * e );

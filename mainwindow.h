@@ -6,6 +6,7 @@
 
 class OCamlSource;
 class OCamlDebug;
+class OCamlWatch;
 QT_BEGIN_NAMESPACE
 class QAction;
 class QTextBrowser;
@@ -56,6 +57,10 @@ private slots:
     void setActiveSubWindow(QWidget *window);
     void stopDebugging( const QString &, int , int , bool) ;
     void ocamlDebugFocus();
+    void createWatchWindow();
+    void watchWindowVisibility( bool visible );
+    void displayVariable( const QString & );
+    void printVariable( const QString & );
 
 private:
     void createActions();
@@ -82,6 +87,7 @@ private:
     QToolBar *editToolBar;
     QToolBar *debugToolBar;
     QAction *openAct;
+    QAction *createWatchWindowAct;
     QAction *setOcamlDebugAct;
     QAction *setWorkingDirectoryAct;
     QAction *setOcamlDebugArgsAct;
@@ -115,6 +121,10 @@ private:
     QAction *debugFinishAct;
 
     QTextBrowser *help_p;
+    QDockWidget *ocamldebug_dock ;
+
+    QList<int> _watch_ids;
+    QList<OCamlWatch*> _watch_windows;
 };
 
 #endif

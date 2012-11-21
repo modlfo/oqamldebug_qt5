@@ -390,8 +390,7 @@ void OCamlSource::fileChanged ( )
 
 void OCamlSource::displayVar ( )
 {
-    QString command = QString("display %1").arg(_selected_text);
-    emit debugger( command , true);
+    emit displayVariable( _selected_text );
     QTextCursor current_cur = textCursor();
     current_cur.clearSelection();
     setTextCursor( current_cur );
@@ -399,8 +398,7 @@ void OCamlSource::displayVar ( )
 
 void OCamlSource::printVar ( )
 {
-    QString command = QString("print %1").arg(_selected_text);
-    emit debugger( command , true);
+    emit printVariable( _selected_text );
     QTextCursor current_cur = textCursor();
     current_cur.clearSelection();
     setTextCursor( current_cur );

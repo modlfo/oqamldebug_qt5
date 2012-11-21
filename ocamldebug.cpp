@@ -16,7 +16,7 @@ OCamlDebug::OCamlDebug( QWidget *parent_p , const QString &ocamldebug, const QSt
     newBreakpointRx("^Breakpoint ([0-9]+) at [0-9]+ : file ([^,]*), line ([0-9]+), characters ([0-9]+)-([0-9]+).*$"),
     emacsHaltInfoRx("^\\x001A\\x001AH.*$"),
     timeInfoRx("^Time : ([0-9]+) - pc : ([0-9]+) - .*$"),
-    hidden_command("#HIDE#")
+    _hidden_command("#HIDE#")
 {
     file_watch_p = NULL;
     debugTimeArea = new OCamlDebugTime( this );
@@ -300,6 +300,7 @@ void OCamlDebug::keyReleaseEvent ( QKeyEvent * e )
 void OCamlDebug::startProcess( const QString &program , const QStringList &arguments )
 {
     clear();
+    _command_response.clear();
     _time_info.clear();
     _time = -1 ;
     _command_queue.clear();
@@ -389,8 +390,7 @@ void OCamlDebug::readChannel()
 void OCamlDebug::appendText( const QByteArray &text )
 {
     bool display = true;
-    if ( !_command_queue.isEmpty() && _command_queue.first().startsWith( hidden_command ) )
-        display = false;
+    bool hidden_command = !_command_queue.isEmpty() && _command_queue.first().startsWith( _hidden_command ) ;
     QString data = QString::fromAscii( text );
     bool command_completed = readyRx.indexIn( data ) >= 0;
     data =  data.remove( readyRx );
@@ -478,20 +478,34 @@ void OCamlDebug::appendText( const QByteArray &text )
 
     if ( display )
     {
-        undisplayCommandLine();
-        if ( _time >= 0)
-            _time_info[blockCount()] = _time ;
-        QTextCursor cur = textCursor();
-        cur.movePosition(QTextCursor::End, QTextCursor::MoveAnchor) ;
-        setTextCursor(cur);
-        cur.insertText(text);
-        displayCommandLine();
-        updateDebugTimeAreaWidth( 0 );
+        if ( hidden_command )
+        {
+            _command_response += data;
+        }
+        else
+        {
+            undisplayCommandLine();
+            if ( _time >= 0)
+                _time_info[blockCount()] = _time ;
+            QTextCursor cur = textCursor();
+            cur.movePosition(QTextCursor::End, QTextCursor::MoveAnchor) ;
+            setTextCursor(cur);
+            cur.insertText(text);
+            displayCommandLine();
+            updateDebugTimeAreaWidth( 0 );
+        }
     }
     if ( command_completed )
     {
         if ( !_command_queue.isEmpty() )
+        {
+            QString command = _command_queue.first();
+            if ( command.startsWith( _hidden_command ) )
+                command = command.right( command.length() - _hidden_command.length() );
+            emit debuggerCommand( command, _command_response );
             _command_queue.removeFirst();
+        }
+        _command_response.clear();
         processOneQueuedCommand();
     }
 }
@@ -513,7 +527,7 @@ void OCamlDebug::debugger( const QString & command, bool show_command )
     if ( show_command )
         _command_queue.append( command );
     else
-        _command_queue.append( hidden_command + command );
+        _command_queue.append( _hidden_command + command );
     if ( empty_queue )
         processOneQueuedCommand();
 }
@@ -525,9 +539,9 @@ void OCamlDebug::processOneQueuedCommand()
         QString command = _command_queue.first();
         if ( command.isEmpty() )
             continue;
-        bool show_command = !command.startsWith( hidden_command ) ;
+        bool show_command = !command.startsWith( _hidden_command ) ;
         if ( !show_command )
-            command = command.right( command.length() - hidden_command.length() );
+            command = command.right( command.length() - _hidden_command.length() );
         if( show_command )
         {
             saveLRU( command );
