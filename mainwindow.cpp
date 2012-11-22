@@ -117,7 +117,7 @@ void MainWindow::watchWindowDestroyed( QObject *o )
     {
         if ( _watch_windows.contains( watch ) )
         {
-            qDebug() << "destroyed" << watch->id ;
+            Options::set_opt( QString("OCamlWatch%0_VARIABLES").arg(watch->id), QStringList() );
             _watch_ids.removeAll( watch->id );
             _watch_windows.removeAll( watch );
             Options::set_opt( "WATCH_IDS", _watch_ids );
