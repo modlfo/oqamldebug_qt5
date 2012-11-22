@@ -408,7 +408,6 @@ void OCamlSource::newBreakpoint ( )
 {
     QFileInfo sourceInfo( curFile );
     QString module = sourceInfo.baseName();
-    module = module.toLower();
     if (module.length() > 0)
     {
         module[0] = module[0].toUpper();
