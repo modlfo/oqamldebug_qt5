@@ -4,15 +4,22 @@
 #include "options.h"
 
 
-OCamlWatch::OCamlWatch( QWidget *parent_p, int i ) : QTextEdit(parent_p), id(i)
+OCamlWatch::OCamlWatch( QWidget *parent_p, int i ) : QWidget(parent_p), id(i)
 {
     setObjectName(QString("OCamlWatch%1").arg( QString::number(id) ));
+
+    layout_p = new QVBoxLayout( );
+    editor_p = new QTextEdit() ;
+    layout_p->addWidget( editor_p );
+    layout_p->setContentsMargins( 0,0,0,0 );
+    setLayout( layout_p );
+
     clearData();
 
-    setReadOnly( true );
-    setUndoRedoEnabled( false );
+    editor_p->setReadOnly( true );
+    editor_p->setUndoRedoEnabled( false );
     setAttribute(Qt::WA_DeleteOnClose);
-    highlighter = new OCamlSourceHighlighter(this->document());
+    highlighter = new OCamlSourceHighlighter(editor_p->document());
     QFont font("Monospace");
     font.setStyleHint(QFont::TypeWriter);
     setFont(font);
@@ -23,11 +30,13 @@ OCamlWatch::OCamlWatch( QWidget *parent_p, int i ) : QTextEdit(parent_p), id(i)
 OCamlWatch::~OCamlWatch()
 {
     clearData();
+    delete layout_p;
+    delete editor_p;
 }
 
 void OCamlWatch::clearData()
 {
-    clear();
+    editor_p->clear();
     _watches.clear();
 }
 
@@ -48,7 +57,6 @@ void OCamlWatch::saveWatches()
 void OCamlWatch::restoreWatches()
 {
     QStringList vars = Options::get_opt_strlst( objectName()+"_VARIABLES" );
-    qDebug() << vars;
     for (QStringList::const_iterator itVar = vars.begin(); itVar != vars.end() ; ++itVar)
     {
         QString variable = *itVar;
@@ -61,13 +69,6 @@ void OCamlWatch::restoreWatches()
 void OCamlWatch::closeEvent(QCloseEvent *event)
 {
     event->accept();
-}
-
-void OCamlWatch::contextMenuEvent(QContextMenuEvent *event)
-{
-    QMenu *menu = createStandardContextMenu();
-    menu->exec(event->globalPos());
-    delete menu;
 }
 
 void OCamlWatch::watch( const QString &variable, bool display ) 
@@ -101,7 +102,7 @@ void OCamlWatch::stopDebugging( const QString &, int , int , bool)
 
 void OCamlWatch::updateWatches()
 {
-    clear();
+    editor_p->clear();
     for (QList<Watch>::const_iterator itWatch = _watches.begin() ; itWatch != _watches.end() ; ++itWatch )
     {
        emit debugger( command( *itWatch ), false );
@@ -123,7 +124,7 @@ void  OCamlWatch::debuggerCommand( const QString &cmd, const QString &result)
             text += Qt::escape( itWatch->value ) ;
             text += "</TD></TR>" ;
             text += "</TABLE>" ;
-            insertHtml( text );
+            editor_p->insertHtml( text );
         }
     }
 }

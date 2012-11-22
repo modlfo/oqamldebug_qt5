@@ -1,16 +1,17 @@
 #ifndef OCAMLWATCH_H
 #define OCAMLWATCH_H
 
-#include <QPlainTextEdit>
 #include <QProcess>
 #include <QString>
 #include <QMap>
 #include <QStringList>
 #include <QTextStream>
+#include <QVBoxLayout>
+#include <QWidget>
 #include "ocamlsourcehighlighter.h"
 #include "filesystemwatcher.h"
 
-class OCamlWatch : public QTextEdit
+class OCamlWatch : public QWidget
 {
     Q_OBJECT
 
@@ -39,12 +40,13 @@ protected:
 private:
     QList<Watch> _watches ;
     QString command (const Watch & ) const;
-    void contextMenuEvent(QContextMenuEvent *event);
     void clearData();
     OCamlSourceHighlighter *highlighter;
     QStringList  variables() const;
     void saveWatches();
     void restoreWatches();
+    QVBoxLayout *layout_p;
+    QTextEdit *editor_p;
 };
 
 #endif
