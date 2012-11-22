@@ -5,7 +5,10 @@
 #include "options.h"
 
 
-OCamlWatch::OCamlWatch( QWidget *parent_p, int i ) : QWidget(parent_p), id(i)
+OCamlWatch::OCamlWatch( QWidget *parent_p, int i ) : 
+    QWidget(parent_p),
+    id(i),
+    variableRx( "^[^:]* : ([^=]*)=(.*)$" )
 {
     setObjectName(QString("OCamlWatch%1").arg( QString::number(id) ));
 
@@ -15,9 +18,13 @@ OCamlWatch::OCamlWatch( QWidget *parent_p, int i ) : QWidget(parent_p), id(i)
     layout_p->setContentsMargins( 0,0,0,0 );
     setLayout( layout_p );
 
+    connect( variables_p->header(), SIGNAL( sectionResized ( int , int , int ) ), this, SLOT( columnResized( int, int, int) ) );
+
+    QStringList headers ;
+    headers << tr("Expresssion") << tr("Type") << tr("Value") ;
     variables_p->setRootIsDecorated(false);
-    variables_p->setColumnCount( 2 );
-    variables_p->setHeaderLabels( QStringList() << tr("Expresssion") << tr("Value") );
+    variables_p->setColumnCount( headers.count() );
+    variables_p->setHeaderLabels( headers );
     clearData();
 
     setAttribute(Qt::WA_DeleteOnClose);
@@ -120,13 +127,30 @@ void  OCamlWatch::debuggerCommand( const QString &cmd, const QString &result)
             bool modified = value != itWatch->value ;
             itWatch->value = value ;
             QStringList item ;
-            item << itWatch->variable << itWatch->value ;
+            QString type;
+            if ( variableRx.exactMatch( itWatch->value ) )
+            {
+                type = variableRx.cap(1).trimmed();
+                value = variableRx.cap(2).trimmed();
+            }
+            item << itWatch->variable << type ;
             QTreeWidgetItem *item_p = new QTreeWidgetItem( item );
             QFont f = font();
             f.setBold( modified );
-            item_p->setFont( 0, f );
-            item_p->setFont( 1, f );
+            for ( int i=0 ; i<2 ; i++ )
+            {
+                item_p->setFont( i, f );
+                item_p->setToolTip( i, "<HTML><BODY><PRE>"+Qt::escape( itWatch->value ) +"</PRE></BODY></HTML>" );
+                item_p->setTextAlignment( i, Qt::AlignLeft | Qt::ElideRight );
+            }
+            QLabel *value_p = new QLabel( value );
+            value_p->setWordWrap(true) ;
+            value_p->setFont( f );
+            int width = variables_p->header()->sectionSize( 2 ) ;
+            item_p->setSizeHint( 2, QSize( width, value_p->heightForWidth( width )) );
+
             variables_p->addTopLevelItem( item_p );
+            variables_p->setItemWidget( item_p, 2, value_p );
         }
     }
 }
@@ -137,4 +161,18 @@ QStringList  OCamlWatch::variables() const
     for (QList<Watch>::const_iterator itWatch = _watches.begin() ; itWatch != _watches.end() ; ++itWatch )
         ret << itWatch->variable ;
     return ret;
+}
+
+void OCamlWatch::columnResized( int logical_index, int /*old_size*/, int new_size )
+{
+    if ( logical_index == 2 )
+    {
+        QTreeWidgetItem *item_p = NULL; 
+        for ( int idx = 0; ( item_p = variables_p->topLevelItem( idx ) ) ; idx++ )
+        {
+            QLabel *label_p = dynamic_cast<QLabel*>(variables_p->itemWidget( item_p, 2 ));
+            if ( label_p )
+                item_p->setSizeHint( 2, QSize( new_size, label_p->heightForWidth( new_size )) );
+        }
+    }
 }

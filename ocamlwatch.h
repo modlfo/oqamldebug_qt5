@@ -31,6 +31,8 @@ public slots:
     void watch( const QString & v, bool display );
     void stopDebugging( const QString &, int , int , bool) ;
     void  debuggerCommand( const QString &, const QString &);
+protected slots:
+    void columnResized( int logical_index, int old_size, int new_size );
 protected:
     void closeEvent(QCloseEvent *event);
 
@@ -43,6 +45,7 @@ private:
     void restoreWatches();
     QVBoxLayout *layout_p;
     QTreeWidget *variables_p;
+    QRegExp variableRx;
 };
 
 #endif
