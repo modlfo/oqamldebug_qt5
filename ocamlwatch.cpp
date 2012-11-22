@@ -124,7 +124,9 @@ void  OCamlWatch::debuggerCommand( const QString &cmd, const QString &result)
         if ( command( *itWatch ) == cmd )
         {
             QString value  = result.trimmed() ;
-            bool modified = value != itWatch->value ;
+            bool modified = false;
+            if ( !itWatch->value.isEmpty() )
+                modified = value != itWatch->value ;
             itWatch->value = value ;
             QStringList item ;
             QString type;
