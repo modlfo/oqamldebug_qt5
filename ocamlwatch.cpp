@@ -15,6 +15,7 @@ OCamlWatch::OCamlWatch( QWidget *parent_p, int i ) : QWidget(parent_p), id(i)
     layout_p->setContentsMargins( 0,0,0,0 );
     setLayout( layout_p );
 
+    variables_p->setRootIsDecorated(false);
     variables_p->setColumnCount( 2 );
     variables_p->setHeaderLabels( QStringList() << tr("Expresssion") << tr("Value") );
     clearData();
@@ -121,11 +122,10 @@ void  OCamlWatch::debuggerCommand( const QString &cmd, const QString &result)
             QStringList item ;
             item << itWatch->variable << itWatch->value ;
             QTreeWidgetItem *item_p = new QTreeWidgetItem( item );
-            if ( modified )
-            {
-                item_p->setBackground( 0, QBrush( Qt::yellow ) );
-                item_p->setBackground( 1, QBrush( Qt::yellow ) );
-            }
+            QFont f = font();
+            f.setBold( modified );
+            item_p->setFont( 0, f );
+            item_p->setFont( 1, f );
             variables_p->addTopLevelItem( item_p );
         }
     }
