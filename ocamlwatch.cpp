@@ -1,5 +1,6 @@
 #include <QtGui>
 #include <QtDebug>
+#include <QTreeWidgetItem>
 #include "ocamlwatch.h"
 #include "options.h"
 
@@ -9,17 +10,16 @@ OCamlWatch::OCamlWatch( QWidget *parent_p, int i ) : QWidget(parent_p), id(i)
     setObjectName(QString("OCamlWatch%1").arg( QString::number(id) ));
 
     layout_p = new QVBoxLayout( );
-    editor_p = new QTextEdit() ;
-    layout_p->addWidget( editor_p );
+    variables_p = new QTreeWidget() ;
+    layout_p->addWidget( variables_p );
     layout_p->setContentsMargins( 0,0,0,0 );
     setLayout( layout_p );
 
+    variables_p->setColumnCount( 2 );
+    variables_p->setHeaderLabels( QStringList() << tr("Expresssion") << tr("Value") );
     clearData();
 
-    editor_p->setReadOnly( true );
-    editor_p->setUndoRedoEnabled( false );
     setAttribute(Qt::WA_DeleteOnClose);
-    highlighter = new OCamlSourceHighlighter(editor_p->document());
     QFont font("Monospace");
     font.setStyleHint(QFont::TypeWriter);
     setFont(font);
@@ -31,12 +31,12 @@ OCamlWatch::~OCamlWatch()
 {
     clearData();
     delete layout_p;
-    delete editor_p;
+    delete variables_p;
 }
 
 void OCamlWatch::clearData()
 {
-    editor_p->clear();
+    variables_p->clear();
     _watches.clear();
 }
 
@@ -102,7 +102,7 @@ void OCamlWatch::stopDebugging( const QString &, int , int , bool)
 
 void OCamlWatch::updateWatches()
 {
-    editor_p->clear();
+    variables_p->clear();
     for (QList<Watch>::const_iterator itWatch = _watches.begin() ; itWatch != _watches.end() ; ++itWatch )
     {
        emit debugger( command( *itWatch ), false );
@@ -115,16 +115,18 @@ void  OCamlWatch::debuggerCommand( const QString &cmd, const QString &result)
     {
         if ( command( *itWatch ) == cmd )
         {
-            itWatch->value = result ;
-            QString text;
-            text += "<TABLE border=\"0\">" ;
-            text += "<TR><TH>" ;
-            text += Qt::escape( itWatch->variable ) ;
-            text += "</TH><TD>" ;
-            text += Qt::escape( itWatch->value ) ;
-            text += "</TD></TR>" ;
-            text += "</TABLE>" ;
-            editor_p->insertHtml( text );
+            QString value  = result.trimmed() ;
+            bool modified = value != itWatch->value ;
+            itWatch->value = value ;
+            QStringList item ;
+            item << itWatch->variable << itWatch->value ;
+            QTreeWidgetItem *item_p = new QTreeWidgetItem( item );
+            if ( modified )
+            {
+                item_p->setBackground( 0, QBrush( Qt::yellow ) );
+                item_p->setBackground( 1, QBrush( Qt::yellow ) );
+            }
+            variables_p->addTopLevelItem( item_p );
         }
     }
 }
