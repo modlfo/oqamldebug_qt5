@@ -497,7 +497,7 @@ void OCamlDebug::appendText( const QByteArray &text )
            )
         {
             if ( !_command_queue.isEmpty() )
-                _command_queue.first().setOption( DebuggerCommand::SHOW_ALL_OUTPUT );
+                _command_queue.first().setOption( DebuggerCommand::HIDE_DEBUGGER_OUTPUT_SHOW_PROMT );
         }
         if ( 
                 command_option == DebuggerCommand::SHOW_ALL_OUTPUT
@@ -507,7 +507,17 @@ void OCamlDebug::appendText( const QByteArray &text )
                 ( 
                  !debugger_command 
                  && 
-                 command_option == DebuggerCommand::HIDE_DEBUGGER_OUTPUT
+                 (
+                  command_option == DebuggerCommand::HIDE_DEBUGGER_OUTPUT
+                  ||
+                  command_option == DebuggerCommand::HIDE_DEBUGGER_OUTPUT_SHOW_PROMT
+                 )
+                )
+                ||
+                ( 
+                 command_completed
+                 &&
+                 command_option == DebuggerCommand::HIDE_DEBUGGER_OUTPUT_SHOW_PROMT
                 )
            )
         {

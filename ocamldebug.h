@@ -28,6 +28,7 @@ class DebuggerCommand
         {
             IMMEDIATE_COMMAND,
             HIDE_DEBUGGER_OUTPUT,
+            HIDE_DEBUGGER_OUTPUT_SHOW_PROMT,
             SHOW_ALL_OUTPUT,
             HIDE_ALL_OUTPUT,
         };
