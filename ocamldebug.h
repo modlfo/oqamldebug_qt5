@@ -21,6 +21,32 @@ typedef QMap<int,BreakPoint> BreakPoints;
 
 class OCamlDebugTime;
 
+class DebuggerCommand
+{
+    public:
+        enum Option
+        {
+            IMMEDIATE_COMMAND,
+            HIDE_DEBUGGER_OUTPUT,
+            SHOW_ALL_OUTPUT,
+            HIDE_ALL_OUTPUT,
+        };
+        DebuggerCommand( const QString &command, Option o ) :
+            _option( o ),
+            _command( command )
+        {
+        }
+
+        const Option &option() const { return _option ; }
+        const QString &command() const { return _command ; }
+        const QString &result() const { return _result; }
+        void appendResult( const QString &s ) { _result += s; }
+    private:
+        Option _option;
+        QString _command;
+        QString _result;
+};
+
 class OCamlDebug : public QPlainTextEdit
 {
     Q_OBJECT
@@ -45,7 +71,7 @@ public slots:
     void startDebug();
     void stopDebug();
     void debuggerInterrupt();
-    void debugger( const QString &, bool show_command );
+    void debugger( const DebuggerCommand & command );
     void updateDebugTimeAreaWidth(int newBlockCount);
     void updateDebugTimeArea(const QRect &, int);
 
@@ -90,9 +116,7 @@ private:
     void undisplayCommandLine();
     QStringList _lru;
     FileSystemWatcher *file_watch_p;
-    QStringList _command_queue;
-    const QString _hidden_command;
-    QString _command_response ;
+    QList<DebuggerCommand> _command_queue;
     OCamlDebugTime *debugTimeArea;
 };
 

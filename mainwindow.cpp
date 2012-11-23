@@ -100,7 +100,7 @@ void MainWindow::createWatchWindow( int watch_id )
     OCamlWatch *ocamlwatch = new OCamlWatch( dock, watch_id );
     connect ( ocamldebug , SIGNAL( stopDebugging( const QString &, int , int , bool) ) , ocamlwatch ,SLOT( stopDebugging( const QString &, int , int , bool) ) );
     connect ( ocamldebug , SIGNAL( debuggerCommand( const QString &, const QString &) ) , ocamlwatch ,SLOT( debuggerCommand( const QString &, const QString &) ) );
-    connect( ocamlwatch, SIGNAL( debugger( const QString &, bool ) ), ocamldebug, SLOT( debugger( const QString &, bool ) ), Qt::QueuedConnection );
+    connect( ocamlwatch, SIGNAL( debugger( const DebuggerCommand & ) ), ocamldebug, SLOT( debugger( const DebuggerCommand & ) ) );
     connect( ocamlwatch, SIGNAL( destroyed( QObject* ) ), this, SLOT( watchWindowDestroyed( QObject* ) ) );
     dock->setObjectName(QString("OCamlWatchDock%1").arg( QString::number(watch_id) ));
     dock->setWidget( ocamlwatch );
@@ -393,8 +393,8 @@ OCamlSource *MainWindow::createMdiChild()
     connect( child, SIGNAL( copyAvailable( bool ) ),
              copyAct, SLOT( setEnabled( bool ) ) );
 
-    connect( child, SIGNAL( debugger( const QString &, bool ) ),
-             ocamldebug, SLOT( debugger( const QString &, bool ) ), Qt::QueuedConnection  );
+    connect( child, SIGNAL( debugger( const DebuggerCommand & ) ),
+             ocamldebug, SLOT( debugger( const DebuggerCommand & ) ) );
 
     connect( child, SIGNAL( releaseFocus() ),
              this, SLOT( ocamlDebugFocus() ) );
@@ -729,13 +729,13 @@ void MainWindow::ocamlDebugFocus()
 void MainWindow::debugUp()
 {
     if (ocamldebug)
-        ocamldebug->debugger("up",false);
+        ocamldebug->debugger( DebuggerCommand( "up", DebuggerCommand::HIDE_DEBUGGER_OUTPUT ) );
 }
 
 void MainWindow::debugDown()
 {
     if (ocamldebug)
-        ocamldebug->debugger("down",false);
+        ocamldebug->debugger( DebuggerCommand( "down",DebuggerCommand::HIDE_DEBUGGER_OUTPUT) );
 }
 
 void MainWindow::debugInterrupt()
@@ -747,43 +747,43 @@ void MainWindow::debugInterrupt()
 void MainWindow::debugRun()
 {
     if (ocamldebug)
-        ocamldebug->debugger("run",false);
+        ocamldebug->debugger( DebuggerCommand( "run",DebuggerCommand::HIDE_DEBUGGER_OUTPUT) );
 }
 
 void MainWindow::debugFinish()
 {
     if (ocamldebug)
-        ocamldebug->debugger("finish",false);
+        ocamldebug->debugger( DebuggerCommand( "finish",DebuggerCommand::HIDE_DEBUGGER_OUTPUT) );
 }
 
 void MainWindow::debugReverse()
 {
     if (ocamldebug)
-        ocamldebug->debugger("reverse",false);
+        ocamldebug->debugger( DebuggerCommand( "reverse", DebuggerCommand::HIDE_DEBUGGER_OUTPUT) );
 }
 
 void MainWindow::debugStep()
 {
     if (ocamldebug)
-        ocamldebug->debugger("step",false);
+        ocamldebug->debugger( DebuggerCommand( "step", DebuggerCommand::HIDE_DEBUGGER_OUTPUT) );
 }
 
 void MainWindow::debugBackStep()
 {
     if (ocamldebug)
-        ocamldebug->debugger("backstep",false);
+        ocamldebug->debugger( DebuggerCommand( "backstep", DebuggerCommand::HIDE_DEBUGGER_OUTPUT) );
 }
 
 void MainWindow::debugNext()
 {
     if (ocamldebug)
-        ocamldebug->debugger("next",false);
+        ocamldebug->debugger( DebuggerCommand( "next", DebuggerCommand::HIDE_DEBUGGER_OUTPUT) );
 }
 
 void MainWindow::debugPrevious()
 {
     if (ocamldebug)
-        ocamldebug->debugger("previous",false);
+        ocamldebug->debugger( DebuggerCommand( "previous", DebuggerCommand::HIDE_DEBUGGER_OUTPUT) );
 }
 
 void MainWindow::breakPointList(const BreakPoints &b)
@@ -819,7 +819,7 @@ void MainWindow::displayVariable( const QString &val )
         if ( _watch_windows.isEmpty() )
         {
             QString command = QString("display %1").arg(val);
-            ocamldebug->debugger( command , true);
+            ocamldebug->debugger( DebuggerCommand( command , DebuggerCommand::SHOW_ALL_OUTPUT) );
         }
         else
             _watch_windows.last()->watch( val, true );
@@ -833,7 +833,7 @@ void MainWindow::printVariable( const QString &val )
         if ( _watch_windows.isEmpty() )
         {
             QString command = QString("print %1").arg(val);
-            ocamldebug->debugger( command , true);
+            ocamldebug->debugger( DebuggerCommand( command , DebuggerCommand::SHOW_ALL_OUTPUT) );
         }
         else
             _watch_windows.last()->watch( val, false );

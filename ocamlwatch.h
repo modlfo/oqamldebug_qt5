@@ -7,6 +7,7 @@
 #include <QVBoxLayout>
 #include <QWidget>
 #include <QTreeWidget>
+#include "ocamldebug.h"
 
 class OCamlWatch : public QWidget
 {
@@ -25,7 +26,7 @@ public:
     const int id ;
 
 signals:
-    bool debugger( const QString &, bool ) ;
+    bool debugger( const DebuggerCommand & ) ;
 public slots:
     void updateWatches();
     void watch( const QString & v, bool display );

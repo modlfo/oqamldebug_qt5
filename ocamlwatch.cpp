@@ -113,7 +113,7 @@ void OCamlWatch::updateWatches()
     variables_p->clear();
     for (QList<Watch>::const_iterator itWatch = _watches.begin() ; itWatch != _watches.end() ; ++itWatch )
     {
-       emit debugger( command( *itWatch ), false );
+       emit debugger( DebuggerCommand( command( *itWatch ), DebuggerCommand::HIDE_ALL_OUTPUT ) );
     }
 }
 

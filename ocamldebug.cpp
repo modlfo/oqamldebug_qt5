@@ -15,8 +15,7 @@ OCamlDebug::OCamlDebug( QWidget *parent_p , const QString &ocamldebug, const QSt
     deleteBreakpointRx("^Removed breakpoint ([0-9]+) at [0-9]+ : .*$"),
     newBreakpointRx("^Breakpoint ([0-9]+) at [0-9]+ : file ([^,]*), line ([0-9]+), characters ([0-9]+)-([0-9]+).*$"),
     emacsHaltInfoRx("^\\x001A\\x001AH.*$"),
-    timeInfoRx("^Time : ([0-9]+) - pc : ([0-9]+) - .*$"),
-    _hidden_command("#HIDE#")
+    timeInfoRx("^Time : ([0-9]+) - pc : ([0-9]+) - .*$")
 {
     file_watch_p = NULL;
     debugTimeArea = new OCamlDebugTime( this );
@@ -63,6 +62,7 @@ void OCamlDebug::clear()
         process_p = NULL;
         emit debuggerStarted( false );
     }
+    QPlainTextEdit::clear();
 }
 
 void OCamlDebug::setOCamlDebug( const QString &ocamldebug )
@@ -229,7 +229,7 @@ void OCamlDebug::keyPressEvent ( QKeyEvent * e )
                          _command_line =  _lru.last();
                          _cursor_position = _command_line.length();
                      }
-                     debugger( _command_line, true );
+                     debugger( DebuggerCommand( _command_line, DebuggerCommand::IMMEDIATE_COMMAND ) );
                      _command_line.clear();
                      _command_line_last.clear();
                      _cursor_position=0;
@@ -300,11 +300,10 @@ void OCamlDebug::keyReleaseEvent ( QKeyEvent * e )
 void OCamlDebug::startProcess( const QString &program , const QStringList &arguments )
 {
     clear();
-    _command_response.clear();
     _time_info.clear();
     _time = -1 ;
     _command_queue.clear();
-    _command_queue << "" ;
+    _command_queue << DebuggerCommand( "", DebuggerCommand::IMMEDIATE_COMMAND ) ;
     process_p =  new QProcess(this) ;
     process_p->setProcessChannelMode(QProcess::MergedChannels);
     connect ( process_p , SIGNAL( readyReadStandardOutput() ) , this , SLOT( receiveDataFromProcessStdOutput()) );
@@ -317,7 +316,7 @@ void OCamlDebug::startProcess( const QString &program , const QStringList &argum
         return;
     }
 
-    debugger( "goto 0", false );
+    debugger( DebuggerCommand( "goto 0", DebuggerCommand::HIDE_ALL_OUTPUT ) );
     restoreBreakpoints();
     emit debuggerStarted( true );
 }
@@ -352,7 +351,7 @@ void OCamlDebug::restoreBreakpoints()
                 QString command = QString("break @ %1 # %2")
                     .arg(module)
                     .arg( QString::number( pos ) );
-                debugger( command, false );
+                debugger( DebuggerCommand( command, DebuggerCommand::HIDE_ALL_OUTPUT) );
             }
         }
     }
@@ -391,7 +390,9 @@ void OCamlDebug::readChannel()
 void OCamlDebug::appendText( const QByteArray &text )
 {
     bool display = true;
-    bool hidden_command = !_command_queue.isEmpty() && _command_queue.first().startsWith( _hidden_command ) ;
+    DebuggerCommand::Option command_option = DebuggerCommand::SHOW_ALL_OUTPUT ;
+    if ( !_command_queue.isEmpty() )
+        command_option = _command_queue.first().option();
     QString data = QString::fromAscii( text );
     bool command_completed = readyRx.indexIn( data ) >= 0;
     data =  data.remove( readyRx );
@@ -479,11 +480,14 @@ void OCamlDebug::appendText( const QByteArray &text )
 
     if ( display )
     {
-        if ( hidden_command )
-        {
-            _command_response += data;
-        }
-        else
+        if ( !_command_queue.isEmpty() )
+            _command_queue.first().appendResult( data );
+
+        if ( 
+                command_option == DebuggerCommand::SHOW_ALL_OUTPUT
+                ||
+                command_option == DebuggerCommand::IMMEDIATE_COMMAND
+           )
         {
             undisplayCommandLine();
             if ( _time >= 0)
@@ -500,13 +504,11 @@ void OCamlDebug::appendText( const QByteArray &text )
     {
         if ( !_command_queue.isEmpty() )
         {
-            QString command = _command_queue.first();
-            if ( command.startsWith( _hidden_command ) )
-                command = command.right( command.length() - _hidden_command.length() );
-            emit debuggerCommand( command, _command_response );
+            QString command = _command_queue.first().command();
+            QString response = _command_queue.first().result();
+            emit debuggerCommand( command, response );
             _command_queue.removeFirst();
         }
-        _command_response.clear();
         processOneQueuedCommand();
     }
 }
@@ -522,14 +524,16 @@ void OCamlDebug::debuggerInterrupt()
 #endif
 }
 
-void OCamlDebug::debugger( const QString & command, bool show_command )
+void OCamlDebug::debugger( const DebuggerCommand &command )
 {
     bool empty_queue = _command_queue.isEmpty() ;
-    if ( show_command )
+
+    if ( command.option() == DebuggerCommand::IMMEDIATE_COMMAND )
+        _command_queue.prepend( command );
+    else    
         _command_queue.append( command );
-    else
-        _command_queue.append( _hidden_command + command );
-    if ( empty_queue )
+
+    if ( empty_queue || command.option() == DebuggerCommand::IMMEDIATE_COMMAND )
         processOneQueuedCommand();
 }
 
@@ -537,12 +541,14 @@ void OCamlDebug::processOneQueuedCommand()
 {
     while ( !_command_queue.isEmpty() )
     {
-        QString command = _command_queue.first();
+        QString command = _command_queue.first().command();
         if ( command.isEmpty() )
             continue;
-        bool show_command = !command.startsWith( _hidden_command ) ;
-        if ( !show_command )
-            command = command.right( command.length() - _hidden_command.length() );
+        bool show_command =
+            _command_queue.first().option() == DebuggerCommand::SHOW_ALL_OUTPUT
+            ||
+            _command_queue.first().option() == DebuggerCommand::IMMEDIATE_COMMAND
+            ;
         if( show_command )
         {
             saveLRU( command );
@@ -584,9 +590,9 @@ void OCamlDebug::wheelEvent ( QWheelEvent * event )
            )
         {
             if (event->delta() > 0 )
-                debugger( "previous", false );
+                debugger( DebuggerCommand( "previous", DebuggerCommand::HIDE_DEBUGGER_OUTPUT ) );
             else if (event->delta() < 0 )
-                debugger( "next" , false);
+                debugger( DebuggerCommand( "next", DebuggerCommand::HIDE_DEBUGGER_OUTPUT ) );
 
             event->ignore();
         }
@@ -597,9 +603,9 @@ void OCamlDebug::wheelEvent ( QWheelEvent * event )
                 )
         {
             if (event->delta() > 0 )
-                debugger( "backstep" , false);
+                debugger( DebuggerCommand( "backstep", DebuggerCommand::HIDE_DEBUGGER_OUTPUT ) );
             else if (event->delta() < 0 )
-                debugger( "step" , false);
+                debugger( DebuggerCommand( "step", DebuggerCommand::HIDE_DEBUGGER_OUTPUT ) );
 
             event->ignore();
         }
@@ -610,9 +616,9 @@ void OCamlDebug::wheelEvent ( QWheelEvent * event )
                 )
         {
             if (event->delta() > 0 )
-                debugger( "up" , false);
+                debugger( DebuggerCommand( "up", DebuggerCommand::HIDE_DEBUGGER_OUTPUT ) );
             else if (event->delta() < 0 )
-                debugger( "down" , false);
+                debugger( DebuggerCommand( "down", DebuggerCommand::HIDE_DEBUGGER_OUTPUT ) );
 
             event->ignore();
         }
@@ -625,11 +631,8 @@ void OCamlDebug::wheelEvent ( QWheelEvent * event )
 
 void OCamlDebug::contextMenuEvent(QContextMenuEvent *event)
 {
-    if ( process_p )
-        setReadOnly(true);
     QMenu *menu = createStandardContextMenu();
     menu->exec(event->globalPos());
-    setReadOnly(false);
     delete menu;
 }
 
@@ -742,7 +745,7 @@ void OCamlDebugTime::mouseDoubleClickEvent ( QMouseEvent * event )
     if ( tm != debugger->timeInfo().end() )
     {
         int time = tm.value();
-        debugger->debugger( "goto " + QString::number(time), false );
+        debugger->debugger( DebuggerCommand( "goto " + QString::number(time), DebuggerCommand::HIDE_DEBUGGER_OUTPUT )  );
     }
     QWidget::mouseMoveEvent( event );
 }

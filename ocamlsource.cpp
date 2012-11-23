@@ -414,7 +414,7 @@ void OCamlSource::newBreakpoint ( )
         QString command = QString("break @ %1 # %2")
             .arg(module)
             .arg( QString::number( _breapoint_position ) );
-        emit debugger( command , true);
+        emit debugger( DebuggerCommand( command, DebuggerCommand::HIDE_DEBUGGER_OUTPUT ) );
     }
 }
 
