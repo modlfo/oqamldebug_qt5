@@ -253,10 +253,11 @@ QString OCamlSource::strippedName( const QString &fullFileName )
 
 void OCamlSource::markBreakPoints(bool unmark)
 {
+    QFileInfo current_file_info( curFile ) ;
     for( BreakPoints::const_iterator itBreakpoint = _breakpoints.begin(); itBreakpoint != _breakpoints.end() ; ++itBreakpoint )
     {
-        QString file = QFileInfo( itBreakpoint.value().file ).canonicalFilePath();
-        if ( file == curFile )
+        QFileInfo breakpoint_file_info( itBreakpoint.value().file ) ;
+        if ( breakpoint_file_info.fileName() == current_file_info.fileName() )
         {
             QTextCharFormat selectedFormat;
 
