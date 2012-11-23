@@ -549,14 +549,13 @@ void OCamlDebug::debuggerInterrupt()
 
 void OCamlDebug::debugger( const DebuggerCommand &command )
 {
-    bool empty_queue = _command_queue.isEmpty() ;
-
     if ( command.option() == DebuggerCommand::IMMEDIATE_COMMAND )
-        _command_queue.prepend( command );
-    else    
-        _command_queue.append( command );
+        _command_queue.clear();
 
-    if ( empty_queue || command.option() == DebuggerCommand::IMMEDIATE_COMMAND )
+    bool empty_queue = _command_queue.isEmpty() ;
+    _command_queue.append( command );
+
+    if ( empty_queue )
         processOneQueuedCommand();
 }
 
