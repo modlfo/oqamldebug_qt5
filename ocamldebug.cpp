@@ -390,13 +390,18 @@ void OCamlDebug::readChannel()
 void OCamlDebug::appendText( const QByteArray &text )
 {
     bool display = true;
+    bool debugger_command = false;
+    qDebug() << "Text:" << text ;
     DebuggerCommand::Option command_option = DebuggerCommand::SHOW_ALL_OUTPUT ;
     if ( !_command_queue.isEmpty() )
         command_option = _command_queue.first().option();
     QString data = QString::fromAscii( text );
     bool command_completed = readyRx.indexIn( data ) >= 0;
-    data =  data.remove( readyRx );
-
+    if ( command_completed )
+    {
+        debugger_command = true;
+        data =  data.remove( readyRx );
+    }
     if ( deleteBreakpointRx.indexIn(data) == 0 )
     {
         QString _id = deleteBreakpointRx.cap(1);
@@ -404,6 +409,7 @@ void OCamlDebug::appendText( const QByteArray &text )
         int id = _id.toInt(&ok);
         if (ok)
         {
+            debugger_command = true;
             _breakpoints.remove( id );
             emit breakPointList( _breakpoints );
         }
@@ -427,6 +433,7 @@ void OCamlDebug::appendText( const QByteArray &text )
             breakpoint.toColumn = _to_char.toInt(&ok);
         if (ok)
         {
+            debugger_command = true;
             _breakpoints[ breakpoint.id ] = breakpoint;
             emit breakPointList( _breakpoints );
         }
@@ -463,7 +470,10 @@ void OCamlDebug::appendText( const QByteArray &text )
         bool ok;
         int t = time.toInt(&ok);
         if ( ok )
+        {
+            debugger_command = true;
             _time = t;
+        }
     }
     else if ( emacsHaltInfoRx.exactMatch(data) )
     {
@@ -482,9 +492,24 @@ void OCamlDebug::appendText( const QByteArray &text )
             _command_queue.first().appendResult( data );
 
         if ( 
+                 !debugger_command 
+                 && 
+                 command_option == DebuggerCommand::HIDE_DEBUGGER_OUTPUT
+           )
+        {
+            if ( !_command_queue.isEmpty() )
+                _command_queue.first().setOption( DebuggerCommand::SHOW_ALL_OUTPUT );
+        }
+        if ( 
                 command_option == DebuggerCommand::SHOW_ALL_OUTPUT
                 ||
                 command_option == DebuggerCommand::IMMEDIATE_COMMAND
+                || 
+                ( 
+                 !debugger_command 
+                 && 
+                 command_option == DebuggerCommand::HIDE_DEBUGGER_OUTPUT
+                )
            )
         {
             undisplayCommandLine();

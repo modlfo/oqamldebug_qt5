@@ -41,6 +41,7 @@ class DebuggerCommand
         const QString &command() const { return _command ; }
         const QString &result() const { return _result; }
         void appendResult( const QString &s ) { _result += s; }
+        void setOption( Option o ) { _option = o ; }
     private:
         Option _option;
         QString _command;
