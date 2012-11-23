@@ -90,6 +90,7 @@ void OCamlWatch::watch( const QString &variable, bool display )
     Watch w;
     w.variable = variable;
     w.display = display;
+    w.uptodate = false;
     _watches.append( w );
     updateWatches();
     saveWatches();
@@ -111,9 +112,10 @@ void OCamlWatch::stopDebugging( const QString &, int , int , bool)
 void OCamlWatch::updateWatches()
 {
     variables_p->clear();
-    for (QList<Watch>::const_iterator itWatch = _watches.begin() ; itWatch != _watches.end() ; ++itWatch )
+    for (QList<Watch>::Iterator itWatch = _watches.begin() ; itWatch != _watches.end() ; ++itWatch )
     {
-       emit debugger( DebuggerCommand( command( *itWatch ), DebuggerCommand::HIDE_ALL_OUTPUT ) );
+        itWatch->uptodate = false;
+        emit debugger( DebuggerCommand( command( *itWatch ), DebuggerCommand::HIDE_ALL_OUTPUT ) );
     }
 }
 
@@ -121,8 +123,9 @@ void  OCamlWatch::debuggerCommand( const QString &cmd, const QString &result)
 {
     for (QList<Watch>::Iterator itWatch = _watches.begin() ; itWatch != _watches.end() ; ++itWatch )
     {
-        if ( command( *itWatch ) == cmd )
+        if ( command( *itWatch ) == cmd && !itWatch->uptodate )
         {
+            itWatch->uptodate = true;
             QString value  = result.trimmed() ;
             bool modified = false;
             if ( !itWatch->value.isEmpty() )

@@ -19,6 +19,7 @@ private:
             QString variable;
             QString value;
             bool display;
+            bool uptodate;
         };
 public:
     OCamlWatch( QWidget * parent_p, int  );
