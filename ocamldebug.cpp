@@ -15,7 +15,7 @@ OCamlDebug::OCamlDebug( QWidget *parent_p , const QString &ocamldebug, const QSt
     deleteBreakpointRx("^Removed breakpoint ([0-9]+) at [0-9]+ : .*$"),
     newBreakpointRx("^Breakpoint ([0-9]+) at [0-9]+ : file ([^,]*), line ([0-9]+), characters ([0-9]+)-([0-9]+).*$"),
     emacsHaltInfoRx("^\\x001A\\x001AH.*$"),
-    timeInfoRx("^Time : ([0-9]+) - pc : ([0-9]+) - .*$")
+    timeInfoRx("^Time : ([0-9]+)( - pc : ([0-9]+) - .*)?\\n?$")
 {
     file_watch_p = NULL;
     debugTimeArea = new OCamlDebugTime( this );
@@ -391,7 +391,6 @@ void OCamlDebug::appendText( const QByteArray &text )
 {
     bool display = true;
     bool debugger_command = false;
-    qDebug() << "Text:" << text ;
     DebuggerCommand::Option command_option = DebuggerCommand::SHOW_ALL_OUTPUT ;
     if ( !_command_queue.isEmpty() )
         command_option = _command_queue.first().option();
