@@ -463,9 +463,7 @@ void OCamlDebug::appendText( const QByteArray &text )
         bool ok;
         int t = time.toInt(&ok);
         if ( ok )
-        {
             _time = t;
-        }
     }
     else if ( emacsHaltInfoRx.exactMatch(data) )
     {
@@ -499,6 +497,7 @@ void OCamlDebug::appendText( const QByteArray &text )
             displayCommandLine();
             updateDebugTimeAreaWidth( 0 );
         }
+        debugTimeArea->repaint();
     }
     if ( command_completed )
     {
@@ -567,6 +566,7 @@ void OCamlDebug::processOneQueuedCommand()
         }
         return;
     }
+    debugTimeArea->repaint();
 }
 
 void OCamlDebug::saveLRU(const QString &command)
@@ -674,8 +674,8 @@ int OCamlDebug::debugTimeAreaWidth()
         ++digits;
     }
     digits+=1;
-    if (digits < 4)
-        digits = 4;
+    if (digits < 5)
+        digits = 5;
 
     int space = 3 + fontMetrics().width( QLatin1Char( 'M' ) ) * digits;
 
@@ -705,9 +705,22 @@ void OCamlDebug::debugTimeAreaPaintEvent( QPaintEvent *event )
                 QMap<int,int>::const_iterator tm = _time_info.find( blockNumber+1 );
                 if ( tm != _time_info.end() )
                 {
-                    QString time = QString::number( tm.value() ) + ":";
-                    painter.drawText( 0, top, debugTimeArea->width(), fontMetrics().height(),
-                            Qt::AlignRight, time );
+                    if ( !_command_queue.isEmpty() && blockNumber == blockCount()-1 )
+                    {
+                        painter.setPen( Qt::blue );
+                        painter.drawText( 0, top, debugTimeArea->width(), fontMetrics().height(),
+                                Qt::AlignRight, tr( "<run>" ) );
+                    }
+                    else
+                    {
+                        int time = tm.value() ;
+                        if ( time >= 0 )
+                        {
+                            QString time = QString::number( tm.value() ) + ":";
+                            painter.drawText( 0, top, debugTimeArea->width(), fontMetrics().height(),
+                                    Qt::AlignRight, time );
+                        }
+                    }
                 }
             }
         }
@@ -745,7 +758,8 @@ void OCamlDebugTime::mouseDoubleClickEvent ( QMouseEvent * event )
     if ( tm != debugger->timeInfo().end() )
     {
         int time = tm.value();
-        debugger->debugger( DebuggerCommand( "goto " + QString::number(time), DebuggerCommand::HIDE_DEBUGGER_OUTPUT )  );
+        if ( time >= 0 )
+            debugger->debugger( DebuggerCommand( "goto " + QString::number(time), DebuggerCommand::HIDE_DEBUGGER_OUTPUT )  );
     }
     QWidget::mouseMoveEvent( event );
 }
@@ -760,7 +774,8 @@ bool OCamlDebugTime::event(QEvent *event)
         if ( tm != debugger->timeInfo().end() )
         {
             int time = tm.value();
-            QToolTip::showText(helpEvent->globalPos(), tr( "Double-click to return to the execution time %1" ).arg( QString::number( time ) ) ) ;
+            if ( time >= 0 )
+                QToolTip::showText(helpEvent->globalPos(), tr( "Double-click to return to the execution time %1" ).arg( QString::number( time ) ) ) ;
         } 
         else
         {
