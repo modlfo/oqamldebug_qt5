@@ -430,11 +430,12 @@ void OCamlSource::newBreakpoint ( )
 void OCamlSource::contextMenuEvent( QContextMenuEvent *event )
 {
     QTextCursor current_cur = textCursor();
-    QTextCursor cur = cursorForPosition( event->pos() );
+    QTextCursor mouse_position = cursorForPosition( event->pos() );
+    QTextCursor cur = mouse_position;
     if ( current_cur.hasSelection() )
         cur = current_cur;
 
-    _breapoint_position = cur.position();
+    _breapoint_position = mouse_position.position();
     if ( ! cur.hasSelection() )
     {
         cur.select(QTextCursor::WordUnderCursor);
@@ -443,8 +444,8 @@ void OCamlSource::contextMenuEvent( QContextMenuEvent *event )
     _selected_text = cur.selectedText();
 
     QAction *breakAct = new QAction( tr( "&Set Breakpoint at line %1 column %2" )
-            .arg( QString::number(cur.blockNumber()+1))
-            .arg( QString::number(cur.columnNumber()+1))
+            .arg( QString::number(mouse_position.blockNumber()+1))
+            .arg( QString::number(mouse_position.columnNumber()+1))
             , this );
     breakAct->setStatusTip( tr( "Set a breakpoint to the current location" ) );
     connect( breakAct, SIGNAL( triggered() ), this, SLOT( newBreakpoint() ) );
