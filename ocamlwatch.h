@@ -37,6 +37,7 @@ public slots:
 protected slots:
     void columnResized( int logical_index, int old_size, int new_size );
     void addNewValue();
+    void expressionClicked( QTreeWidgetItem * , int );
 protected:
     void closeEvent(QCloseEvent *event);
 

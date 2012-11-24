@@ -20,6 +20,7 @@ OCamlWatch::OCamlWatch( QWidget *parent_p, int i ) :
     layout_add_value_p->addWidget( add_value_p );
     layout_p = new QVBoxLayout( );
     variables_p = new QTreeWidget() ;
+    connect( variables_p, SIGNAL( itemClicked ( QTreeWidgetItem * , int ) ), this, SLOT( expressionClicked( QTreeWidgetItem * , int ) ) );
     layout_p->addWidget( variables_p );
     layout_p->addLayout( layout_add_value_p );
     layout_p->setContentsMargins( 0,0,0,0 );
@@ -28,7 +29,7 @@ OCamlWatch::OCamlWatch( QWidget *parent_p, int i ) :
     connect( variables_p->header(), SIGNAL( sectionResized ( int , int , int ) ), this, SLOT( columnResized( int, int, int) ) );
 
     QStringList headers ;
-    headers << tr("Expresssion") << tr("Type") << tr("Value") ;
+    headers << "" << tr("Expresssion") << tr("Type") << tr("Value") ;
     variables_p->setRootIsDecorated(false);
     variables_p->setColumnCount( headers.count() );
     variables_p->setHeaderLabels( headers );
@@ -148,24 +149,31 @@ void  OCamlWatch::debuggerCommand( const QString &cmd, const QString &result)
                 type = variableRx.cap(1).trimmed();
                 value = variableRx.cap(2).trimmed();
             }
-            item << itWatch->variable << type ;
+            item << "" << itWatch->variable << type ;
             QTreeWidgetItem *item_p = new QTreeWidgetItem( item );
             QFont f = font();
             f.setBold( modified );
-            for ( int i=0 ; i<2 ; i++ )
+            for ( int i=1 ; i<3 ; i++ )
             {
                 item_p->setFont( i, f );
-                item_p->setToolTip( i, "<HTML><BODY><PRE>"+Qt::escape( itWatch->value ) +"</PRE></BODY></HTML>" );
-                item_p->setTextAlignment( i, Qt::AlignLeft | Qt::ElideRight );
+                item_p->setToolTip( i, tr( "Click to switch between the display and print mode." ) );
+                item_p->setTextAlignment( i, Qt::AlignLeft | Qt::ElideRight | Qt::AlignVCenter );
             }
             QLabel *value_p = new QLabel( value );
             value_p->setWordWrap(true) ;
             value_p->setFont( f );
-            int width = variables_p->header()->sectionSize( 2 ) ;
-            item_p->setSizeHint( 2, QSize( width, value_p->heightForWidth( width )) );
+            int width = variables_p->header()->sectionSize( 3 ) ;
+            item_p->setSizeHint( 3, QSize( width, value_p->heightForWidth( width )) );
+            QIcon delete_icon = QIcon( ":/images/cut.png" );
+            item_p->setIcon( 0, delete_icon );
+            item_p->setToolTip( 0, tr( "Click to unwatch this variable." ) );
+            item_p->setSizeHint( 0, delete_icon.availableSizes().at(0) );
+            variables_p->header()->resizeSection( 0, delete_icon.availableSizes().at(0).width() ); 
+            variables_p->header()->setResizeMode( 0, QHeaderView::Fixed ); 
+            variables_p->header()->setResizeMode( 3, QHeaderView::ResizeToContents ); 
 
             variables_p->addTopLevelItem( item_p );
-            variables_p->setItemWidget( item_p, 2, value_p );
+            variables_p->setItemWidget( item_p, 3, value_p );
         }
     }
 }
@@ -180,14 +188,14 @@ QStringList  OCamlWatch::variables() const
 
 void OCamlWatch::columnResized( int logical_index, int /*old_size*/, int new_size )
 {
-    if ( logical_index == 2 )
+    if ( logical_index == 3 )
     {
         QTreeWidgetItem *item_p = NULL; 
         for ( int idx = 0; ( item_p = variables_p->topLevelItem( idx ) ) ; idx++ )
         {
-            QLabel *label_p = dynamic_cast<QLabel*>(variables_p->itemWidget( item_p, 2 ));
+            QLabel *label_p = dynamic_cast<QLabel*>(variables_p->itemWidget( item_p, 3 ));
             if ( label_p )
-                item_p->setSizeHint( 2, QSize( new_size, label_p->heightForWidth( new_size )) );
+                item_p->setSizeHint( 3, QSize( new_size, label_p->heightForWidth( new_size )) );
         }
     }
 }
@@ -196,3 +204,24 @@ void OCamlWatch::addNewValue()
 {
     watch( add_value_p->text(), true );
 }
+
+void OCamlWatch::expressionClicked( QTreeWidgetItem *item_p , int column )
+{
+    if (item_p)
+    {
+        for (QList<Watch>::Iterator itWatch = _watches.begin() ; itWatch != _watches.end() ; ++itWatch )
+        {
+            if ( item_p->text(0) == itWatch->variable )
+            {
+                if ( column == 0 )
+                    _watches.erase(itWatch);
+                else
+                    itWatch->display = !itWatch->display ;
+                break;
+            }
+        }
+        saveWatches();
+        updateWatches();
+    }
+}
+
