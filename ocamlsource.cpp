@@ -405,6 +405,14 @@ void OCamlSource::printVar ( )
     setTextCursor( current_cur );
 }
 
+void OCamlSource::watchVar ( )
+{
+    emit watchVariable( _selected_text );
+    QTextCursor current_cur = textCursor();
+    current_cur.clearSelection();
+    setTextCursor( current_cur );
+}
+
 void OCamlSource::newBreakpoint ( )
 {
     QFileInfo sourceInfo( curFile );
@@ -458,6 +466,14 @@ void OCamlSource::contextMenuEvent( QContextMenuEvent *event )
                 , this );
         connect( printAct, SIGNAL( triggered() ), this, SLOT( printVar() ) );
     }
+    QAction *watchAct = NULL;
+    if ( cur.hasSelection() )
+    {
+        watchAct = new QAction( tr( "&Watch '%1'" )
+                .arg( _selected_text )
+                , this );
+        connect( watchAct, SIGNAL( triggered() ), this, SLOT( watchVar() ) );
+    }
 
     QMenu *menu = createStandardContextMenu();
 
@@ -466,6 +482,8 @@ void OCamlSource::contextMenuEvent( QContextMenuEvent *event )
         menu->addAction( displayAct );
     if (printAct)
         menu->addAction( printAct );
+    if (watchAct)
+        menu->addAction( watchAct );
     menu->exec( event->globalPos() );
 
     delete breakAct;
@@ -473,6 +491,8 @@ void OCamlSource::contextMenuEvent( QContextMenuEvent *event )
         delete displayAct;
     if (printAct)
         delete printAct;
+    if (watchAct)
+        delete watchAct;
 }
 
 

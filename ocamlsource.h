@@ -35,6 +35,7 @@ class OCamlSource : public QPlainTextEdit
         void debugger( const DebuggerCommand & command );
         void displayVariable( const QString & );
         void printVariable( const QString & );
+        void watchVariable( const QString & );
         void releaseFocus();
     protected:
         virtual void keyPressEvent ( QKeyEvent * e );
@@ -45,6 +46,7 @@ class OCamlSource : public QPlainTextEdit
         private slots:
             void newBreakpoint ( );
             void printVar ( );
+            void watchVar ( );
             void displayVar ( );
         void markCurrentLocation();
         void markBreakPoints(bool);

@@ -402,6 +402,9 @@ OCamlSource *MainWindow::createMdiChild()
     connect( child, SIGNAL( printVariable( const QString & ) ),
              this, SLOT( printVariable( const QString & ) ) );
 
+    connect( child, SIGNAL( watchVariable( const QString & ) ),
+             this, SLOT( watchVariable( const QString & ) ) );
+
     connect( child, SIGNAL( displayVariable( const QString & ) ),
              this, SLOT( displayVariable( const QString & ) ) );
 
@@ -816,13 +819,8 @@ void MainWindow::displayVariable( const QString &val )
 {
     if ( ocamldebug )
     {
-        if ( _watch_windows.isEmpty() )
-        {
-            QString command = QString("display %1").arg(val);
-            ocamldebug->debugger( DebuggerCommand( command , DebuggerCommand::SHOW_ALL_OUTPUT) );
-        }
-        else
-            _watch_windows.last()->watch( val, true );
+        QString command = QString("display %1").arg(val);
+        ocamldebug->debugger( DebuggerCommand( command , DebuggerCommand::SHOW_ALL_OUTPUT) );
     }
 }
 
@@ -830,13 +828,19 @@ void MainWindow::printVariable( const QString &val )
 {
     if ( ocamldebug )
     {
+        QString command = QString("print %1").arg(val);
+        ocamldebug->debugger( DebuggerCommand( command , DebuggerCommand::SHOW_ALL_OUTPUT) );
+    }
+}
+
+void MainWindow::watchVariable( const QString &val )
+{
+    if ( ocamldebug )
+    {
         if ( _watch_windows.isEmpty() )
-        {
-            QString command = QString("print %1").arg(val);
-            ocamldebug->debugger( DebuggerCommand( command , DebuggerCommand::SHOW_ALL_OUTPUT) );
-        }
-        else
-            _watch_windows.last()->watch( val, false );
+            createWatchWindow();
+        if ( !_watch_windows.isEmpty() )
+            _watch_windows.last()->watch( val, true );
     }
 }
 

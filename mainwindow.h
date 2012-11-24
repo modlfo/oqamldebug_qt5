@@ -61,6 +61,7 @@ private slots:
     void watchWindowDestroyed( QObject* );
     void displayVariable( const QString & );
     void printVariable( const QString & );
+    void watchVariable( const QString & );
 
 private:
     void createWatchWindow( int watch_id );
