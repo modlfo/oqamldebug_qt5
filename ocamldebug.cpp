@@ -496,9 +496,12 @@ void OCamlDebug::appendText( const QByteArray &text )
                  command_option == DebuggerCommand::HIDE_DEBUGGER_OUTPUT
            )
         {
-            if ( !_command_queue.isEmpty() )
-                _command_queue.first().setOption( DebuggerCommand::HIDE_DEBUGGER_OUTPUT_SHOW_PROMT );
+            if ( !data.isEmpty() )
+                if ( !_command_queue.isEmpty() )
+                    _command_queue.first().setOption( DebuggerCommand::HIDE_DEBUGGER_OUTPUT_SHOW_PROMT );
         }
+        if ( _time >= 0 && command_completed )
+            _time_info[blockCount()] = _time ;
         if ( 
                 command_option == DebuggerCommand::SHOW_ALL_OUTPUT
                 ||
@@ -522,8 +525,6 @@ void OCamlDebug::appendText( const QByteArray &text )
            )
         {
             undisplayCommandLine();
-            if ( _time >= 0)
-                _time_info[blockCount()] = _time ;
             QTextCursor cur = textCursor();
             cur.movePosition(QTextCursor::End, QTextCursor::MoveAnchor) ;
             setTextCursor(cur);
@@ -735,23 +736,25 @@ void OCamlDebug::debugTimeAreaPaintEvent( QPaintEvent *event )
             }
             else
             {
-                QMap<int,int>::const_iterator tm = _time_info.find( blockNumber+1 );
-                if ( tm != _time_info.end() )
+                if ( !_command_queue.isEmpty() && blockNumber == blockCount()-1 )
                 {
-                    if ( !_command_queue.isEmpty() && blockNumber == blockCount()-1 )
+                    painter.setPen( Qt::blue );
+                    painter.drawText( 0, top, debugTimeArea->width(), fontMetrics().height(),
+                            Qt::AlignRight, tr( "<run>" ) );
+                }
+                else
+                {
+                    QMap<int,int>::const_iterator tm = _time_info.find( blockNumber+1 );
+                    if ( tm != _time_info.end() )
                     {
-                        painter.setPen( Qt::blue );
-                        painter.drawText( 0, top, debugTimeArea->width(), fontMetrics().height(),
-                                Qt::AlignRight, tr( "<run>" ) );
-                    }
-                    else
-                    {
-                        int time = tm.value() ;
-                        if ( time >= 0 )
                         {
-                            QString time = QString::number( tm.value() ) + ":";
-                            painter.drawText( 0, top, debugTimeArea->width(), fontMetrics().height(),
-                                    Qt::AlignRight, time );
+                            int time = tm.value() ;
+                            if ( time >= 0 )
+                            {
+                                QString time = QString::number( tm.value() ) + ":";
+                                painter.drawText( 0, top, debugTimeArea->width(), fontMetrics().height(),
+                                        Qt::AlignRight, time );
+                            }
                         }
                     }
                 }
