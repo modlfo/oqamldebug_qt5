@@ -530,7 +530,7 @@ void OCamlSource::mousePressEvent ( QMouseEvent * e )
 
     if ( e->button() == Qt::MidButton )
     {
-        printVar();
+        watchVar();
     }
     else
         QPlainTextEdit::mousePressEvent(e);
