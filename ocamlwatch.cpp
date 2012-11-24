@@ -12,9 +12,16 @@ OCamlWatch::OCamlWatch( QWidget *parent_p, int i ) :
 {
     setObjectName(QString("OCamlWatch%1").arg( QString::number(id) ));
 
+    layout_add_value_p = new QHBoxLayout( );
+    add_value_label_p = new QLabel(tr("Add expression:"));
+    add_value_p = new QLineEdit();
+    connect( add_value_p, SIGNAL( returnPressed() ), this, SLOT( addNewValue() ) );
+    layout_add_value_p->addWidget( add_value_label_p );
+    layout_add_value_p->addWidget( add_value_p );
     layout_p = new QVBoxLayout( );
     variables_p = new QTreeWidget() ;
     layout_p->addWidget( variables_p );
+    layout_p->addLayout( layout_add_value_p );
     layout_p->setContentsMargins( 0,0,0,0 );
     setLayout( layout_p );
 
@@ -38,6 +45,9 @@ OCamlWatch::OCamlWatch( QWidget *parent_p, int i ) :
 OCamlWatch::~OCamlWatch()
 {
     clearData();
+    delete add_value_p;
+    delete add_value_label_p;
+    delete layout_add_value_p;
     delete layout_p;
     delete variables_p;
 }
@@ -180,4 +190,9 @@ void OCamlWatch::columnResized( int logical_index, int /*old_size*/, int new_siz
                 item_p->setSizeHint( 2, QSize( new_size, label_p->heightForWidth( new_size )) );
         }
     }
+}
+
+void OCamlWatch::addNewValue()
+{
+    watch( add_value_p->text(), true );
 }

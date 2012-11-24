@@ -6,6 +6,7 @@
 #include <QStringList>
 #include <QVBoxLayout>
 #include <QWidget>
+#include <QLabel>
 #include <QTreeWidget>
 #include "ocamldebug.h"
 
@@ -35,6 +36,7 @@ public slots:
     void  debuggerCommand( const QString &, const QString &);
 protected slots:
     void columnResized( int logical_index, int old_size, int new_size );
+    void addNewValue();
 protected:
     void closeEvent(QCloseEvent *event);
 
@@ -46,6 +48,9 @@ private:
     void saveWatches();
     void restoreWatches();
     QVBoxLayout *layout_p;
+    QHBoxLayout *layout_add_value_p;
+    QLabel *add_value_label_p;
+    QLineEdit *add_value_p;
     QTreeWidget *variables_p;
     QRegExp variableRx;
 };
