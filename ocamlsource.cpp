@@ -254,7 +254,9 @@ QString OCamlSource::strippedName( const QString &fullFileName )
 void OCamlSource::markBreakPoints(bool unmark)
 {
     QFileInfo current_file_info( curFile ) ;
-    for( BreakPoints::const_iterator itBreakpoint = _breakpoints.begin(); itBreakpoint != _breakpoints.end() ; ++itBreakpoint )
+    BreakPoints::const_iterator itBreakpoint ;
+
+    for( itBreakpoint = _breakpoints.begin(); itBreakpoint != _breakpoints.end() ; ++itBreakpoint )
     {
         QFileInfo breakpoint_file_info( itBreakpoint.value().file ) ;
         if ( breakpoint_file_info.fileName() == current_file_info.fileName() )
@@ -264,7 +266,7 @@ void OCamlSource::markBreakPoints(bool unmark)
             if ( unmark )
                 selectedFormat.setBackground( QColor( Qt::white ) );
             else
-                selectedFormat.setBackground( QColor( Qt::red ) );
+                selectedFormat.setBackground( QColor( Qt::red ).lighter() );
 
             QTextCursor cur = textCursor();
             int line        = itBreakpoint.value().fromLine;
@@ -277,6 +279,40 @@ void OCamlSource::markBreakPoints(bool unmark)
             cur.movePosition( QTextCursor::NextCharacter, QTextCursor::KeepAnchor, to_column - from_column );
 
             cur.mergeCharFormat( selectedFormat );
+        }
+    }
+
+    if ( !unmark )
+    {
+        for( itBreakpoint = _breakpoints.begin(); itBreakpoint != _breakpoints.end() ; ++itBreakpoint )
+        {
+            QFileInfo breakpoint_file_info( itBreakpoint.value().file ) ;
+            if ( breakpoint_file_info.fileName() == current_file_info.fileName() )
+            {
+                QTextCharFormat selectedFormat;
+
+                selectedFormat.setBackground( QColor( Qt::red ) );
+
+                QTextCursor cur = textCursor();
+                int line        = itBreakpoint.value().fromLine;
+                int from_column = itBreakpoint.value().fromColumn;
+                int to_column   = itBreakpoint.value().toColumn;
+
+                cur.movePosition( QTextCursor::Start, QTextCursor::MoveAnchor );
+                cur.movePosition( QTextCursor::NextBlock, QTextCursor::MoveAnchor, line-1 );
+                cur.movePosition( QTextCursor::NextCharacter, QTextCursor::MoveAnchor, from_column-1 );
+                cur.movePosition( QTextCursor::NextCharacter, QTextCursor::KeepAnchor, 1 );
+                cur.mergeCharFormat( selectedFormat );
+
+                if ( to_column - from_column > 2 )
+                {
+                    cur.movePosition( QTextCursor::Start, QTextCursor::MoveAnchor );
+                    cur.movePosition( QTextCursor::NextBlock, QTextCursor::MoveAnchor, line-1 );
+                    cur.movePosition( QTextCursor::NextCharacter, QTextCursor::MoveAnchor, to_column - 2 );
+                    cur.movePosition( QTextCursor::NextCharacter, QTextCursor::KeepAnchor, 1 );
+                    cur.mergeCharFormat( selectedFormat );
+                }
+            }
         }
     }
 }
