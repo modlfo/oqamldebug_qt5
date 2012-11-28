@@ -549,19 +549,9 @@ void OCamlSource::mousePressEvent ( QMouseEvent * e )
     _selected_text = cur.selectedText();
     if ( e->button() == Qt::LeftButton )
     {
-        if ( _selected_text.isEmpty() )
-        {
-            lineSearchArea->hide();
-            lineSearchArea->setEnabled(false);
-            setFocus();
-        }
-        else
-        {
-            lineSearchArea->show();
-            lineSearchArea->setEnabled(true);
-            lineSearchArea->setFocus();
-            lineSearchArea->setText( _selected_text );
-        }
+        lineSearchArea->hide();
+        lineSearchArea->setEnabled(false);
+        setFocus();
     }
 
     if ( e->button() == Qt::MidButton )
