@@ -222,7 +222,7 @@ void OCamlWatch::expressionClicked( QTreeWidgetItem *item_p , int column )
     {
         for (QList<Watch>::Iterator itWatch = _watches.begin() ; itWatch != _watches.end() ; ++itWatch )
         {
-            if ( item_p->text(0) == itWatch->variable )
+            if ( item_p->text(1) == itWatch->variable )
             {
                 if ( column == 0 )
                     _watches.erase(itWatch);
