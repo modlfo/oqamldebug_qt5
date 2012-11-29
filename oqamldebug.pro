@@ -22,6 +22,8 @@ SOURCES       = main.cpp \
 RESOURCES     = oqamldebug.qrc
 FORMS         =
 
+ICON=images/oqamldebug.icns
+
 # install
 DISTFILES += $$RESOURCES readme.html 
 DISTFILES += images/copy.png images/cut.png images/debug-backstep.png images/debug-down.png \

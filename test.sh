@@ -2,4 +2,9 @@
 ocamlc -o testme -g test.ml || exit
 #./testme
 make || exit
-./oqamldebug testme
+if [ -e oqamldebug ]
+then
+    ./oqamldebug testme
+else
+    open ./oqamldebug.app --args $PWD/testme
+fi
