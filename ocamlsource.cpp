@@ -1,5 +1,6 @@
 #include <QtGui>
 #include "ocamlsource.h"
+#include "options.h"
 #include "ocamlsourcehighlighter.h"
 #include <QTimer>
 #include <QAction>
@@ -590,5 +591,24 @@ void OCamlSourceLineNumberArea::paintEvent( QPaintEvent *event )
 OCamlSourceSearch::OCamlSourceSearch( OCamlSource *editor ) : QLineEdit( editor )
 {
     codeEditor = editor;
+    searched_pattern = Options::get_opt_strlst( "SEARCHED_PATTERN" ) ;
+    completer_p = new QCompleter( searched_pattern );
+    setCompleter( completer_p );
+    connect( this, SIGNAL( returnPressed() ), this, SLOT( addToLRU() ) );
+}
+
+OCamlSourceSearch::~OCamlSourceSearch( )
+{
+    delete completer_p;
+}
+
+void OCamlSourceSearch::addToLRU()
+{
+    QString v = text();
+    searched_pattern.removeAll( v );
+    searched_pattern.prepend( v );
+    QStringListModel *model = static_cast<QStringListModel*>( completer_p->model() );
+    model->setStringList( searched_pattern );
+    Options::set_opt( "SEARCHED_PATTERN", searched_pattern ) ;
 }
 

@@ -4,6 +4,7 @@
 #include <QPlainTextEdit>
 #include <QLineEdit>
 #include <QTimer>
+#include <QCompleter>
 #include "ocamldebug.h"
 #include "ocamlsourcehighlighter.h"
 #include "filesystemwatcher.h"
@@ -94,10 +95,17 @@ class OCamlSourceLineNumberArea : public QWidget
 
 class OCamlSourceSearch : public QLineEdit
 {
+    Q_OBJECT;
     public:
         OCamlSourceSearch( OCamlSource *editor ) ;
+        virtual ~OCamlSourceSearch( ) ;
+
+    private slots:
+        void addToLRU();
 
     private:
         OCamlSource *codeEditor;
+        QCompleter *completer_p;
+        QStringList searched_pattern;
 };
 #endif
