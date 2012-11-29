@@ -169,7 +169,7 @@ void  OCamlWatch::debuggerCommand( const QString &cmd, const QString &result)
             value_p->setFont( f );
             int width = variables_p->header()->sectionSize( 3 ) ;
             item_p->setSizeHint( 3, QSize( width, value_p->heightForWidth( width )) );
-            QIcon delete_icon = QIcon( ":/images/cut.png" );
+            QIcon delete_icon = QIcon( ":/images/delete.png" );
             item_p->setIcon( 0, delete_icon );
             item_p->setToolTip( 0, tr( "Click to unwatch this variable." ) );
             item_p->setSizeHint( 0, delete_icon.availableSizes().at(0) );
