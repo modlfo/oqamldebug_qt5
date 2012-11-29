@@ -33,4 +33,9 @@ DISTFILES += images/copy.png images/cut.png images/debug-backstep.png images/deb
 unix {
     target.path = $$(PREFIX)/bin
     INSTALLS += target
+
+    tags.target = tags
+    tags.commands = ctags  --line-directives=yes --languages=all --fields=iaS --extra=+q --langmap=yacc:.y,c++:.cpp.h,c:.c --yacc-kinds=+l --c-kinds=+dpefglmstuv --c++-kinds=+cpdefmstuv -f $$tags.target  $$HEADERS $$SOURCES
+    tags.depends = $$HEADERS $$SOURCES
+    QMAKE_EXTRA_TARGETS += tags
 }
