@@ -1,4 +1,4 @@
-CONFIG -= app_bundle
+#CONFIG -= app_bundle
 VERSION=0.0.0
 
 HEADERS       = mainwindow.h \
