@@ -272,18 +272,6 @@ void MainWindow::setOCamlDebug()
     }
 }
 
-void MainWindow::paste()
-{
-    if ( activeMdiChild() )
-        activeMdiChild()->paste();
-}
-
-void MainWindow::cut()
-{
-    if ( activeMdiChild() )
-        activeMdiChild()->cut();
-}
-
 void MainWindow::copy()
 {
     if ( activeMdiChild() )
@@ -329,7 +317,6 @@ void MainWindow::updateMenus()
     bool hasSelection = ( activeMdiChild() &&
                           activeMdiChild()->textCursor().hasSelection() );
     copyAct->setEnabled( hasSelection );
-    cutAct->setEnabled( hasSelection );
 }
 
 void MainWindow::updateWindowMenu()
@@ -388,9 +375,6 @@ OCamlSource *MainWindow::createMdiChild()
     mdiArea->addSubWindow( child );
 
     connect( child, SIGNAL( copyAvailable( bool ) ),
-             cutAct, SLOT( setEnabled( bool ) ) );
-
-    connect( child, SIGNAL( copyAvailable( bool ) ),
              copyAct, SLOT( setEnabled( bool ) ) );
 
     connect( child, SIGNAL( debugger( const DebuggerCommand & ) ),
@@ -445,18 +429,6 @@ void MainWindow::createActions()
     copyAct->setStatusTip( tr( "Copy the current selection's contents to the "
                                "clipboard" ) );
     connect( copyAct, SIGNAL( triggered() ), this, SLOT( copy() ) );
-
-    cutAct = new QAction( QIcon( ":/images/cut.png" ), tr( "&Cut" ), this );
-    cutAct->setShortcuts( QKeySequence::Cut );
-    cutAct->setStatusTip( tr( "Cut the current selection's contents to the "
-                               "clipboard" ) );
-    connect( cutAct, SIGNAL( triggered() ), this, SLOT( cut() ) );
-
-
-    pasteAct = new QAction( QIcon( ":/images/paste.png" ), tr( "&Paste" ), this );
-    pasteAct->setShortcuts( QKeySequence::Paste );
-    pasteAct->setStatusTip( tr( "Paste contents of the clipboard" ) );
-    connect( pasteAct, SIGNAL( triggered() ), this, SLOT( paste() ) );
 
     closeAct = new QAction( tr( "Cl&ose" ), this );
     closeAct->setStatusTip( tr( "Close the active window" ) );
@@ -591,8 +563,6 @@ void MainWindow::createMenus()
 
     editMenu = menuBar()->addMenu( tr( "&Edit" ) );
     editMenu->addAction( copyAct );
-    editMenu->addAction( cutAct );
-    editMenu->addAction( pasteAct );
 
     windowMenu = menuBar()->addMenu( tr( "&Window" ) );
     updateWindowMenu();
@@ -615,8 +585,6 @@ void MainWindow::createToolBars()
     editToolBar = addToolBar( tr( "Edit" ) );
     editToolBar->setObjectName("EditToolBar");
     editToolBar->addAction( copyAct );
-    editToolBar->addAction( cutAct );
-    editToolBar->addAction( pasteAct );
 
     debugToolBar = addToolBar( tr( "Debug" ) );
     debugToolBar->setObjectName("DebugToolBar");

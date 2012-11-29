@@ -31,8 +31,6 @@ protected:
 private slots:
     void open();
     void copy();
-    void cut();
-    void paste();
     void debuggerStart(bool);
     void debuggerStarted(bool b);
     void breakPointList(const BreakPoints &b);
@@ -95,8 +93,6 @@ private:
     QAction *setOcamlDebugArgsAct;
     QAction *exitAct;
     QAction *copyAct;
-    QAction *cutAct;
-    QAction *pasteAct;
     QAction *closeAct;
     QAction *closeAllAct;
     QAction *tileAct;
