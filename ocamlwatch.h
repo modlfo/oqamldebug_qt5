@@ -8,6 +8,7 @@
 #include <QWidget>
 #include <QLabel>
 #include <QTreeWidget>
+#include <QCompleter>
 #include "ocamldebug.h"
 
 class OCamlWatch : public QWidget
@@ -52,6 +53,8 @@ private:
     QHBoxLayout *layout_add_value_p;
     QLabel *add_value_label_p;
     QLineEdit *add_value_p;
+    QStringList add_values ;
+    QCompleter *add_value_completer_p;
     QTreeWidget *variables_p;
     QRegExp variableRx;
 };

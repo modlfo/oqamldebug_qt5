@@ -1,6 +1,7 @@
 #include <QtGui>
 #include <QtDebug>
 #include <QTreeWidgetItem>
+#include <QStringListModel>
 #include "ocamlwatch.h"
 #include "options.h"
 
@@ -15,6 +16,9 @@ OCamlWatch::OCamlWatch( QWidget *parent_p, int i ) :
     layout_add_value_p = new QHBoxLayout( );
     add_value_label_p = new QLabel(tr("Add expression:"));
     add_value_p = new QLineEdit();
+    add_values = Options::get_opt_strlst( "WATCHED_VARIABLES" ) ;
+    add_value_completer_p = new QCompleter( add_values );
+    add_value_p->setCompleter( add_value_completer_p );
     connect( add_value_p, SIGNAL( returnPressed() ), this, SLOT( addNewValue() ) );
     layout_add_value_p->addWidget( add_value_label_p );
     layout_add_value_p->addWidget( add_value_p );
@@ -46,6 +50,7 @@ OCamlWatch::OCamlWatch( QWidget *parent_p, int i ) :
 OCamlWatch::~OCamlWatch()
 {
     clearData();
+    delete add_value_completer_p;
     delete add_value_p;
     delete add_value_label_p;
     delete layout_add_value_p;
@@ -202,7 +207,13 @@ void OCamlWatch::columnResized( int logical_index, int /*old_size*/, int new_siz
 
 void OCamlWatch::addNewValue()
 {
-    watch( add_value_p->text(), true );
+    QString v = add_value_p->text();
+    add_values.removeAll( v );
+    add_values.prepend( v );
+    QStringListModel *model = static_cast<QStringListModel*>( add_value_completer_p->model() );
+    model->setStringList( add_values );
+    Options::set_opt( "WATCHED_VARIABLES", add_values ) ;
+    watch( v, true );
 }
 
 void OCamlWatch::expressionClicked( QTreeWidgetItem *item_p , int column )
