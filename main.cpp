@@ -9,10 +9,34 @@
 #include <X11/Xlib.h> 
 #endif
 
+static void MessageOutput( QtMsgType type, const char *msg )
+{
+  switch ( type ) 
+  {
+#if !QT_NO_DEBUG
+    case QtDebugMsg:
+      fprintf( stderr, "%s\n", msg );
+      break;
+    case QtSystemMsg:
+      fprintf( stderr, "System Message: %s\n", msg );
+      break;
+    case QtWarningMsg:
+      fprintf( stderr, "Warning: %s\n", msg );
+      break;
+#endif
+    case QtFatalMsg:
+      fprintf( stderr, "Fatal Error: %s\n", msg );
+      abort();
+    default:
+       break;
+  }
+}
+
 
 int main( int argc, char *argv[] )
 {
     Q_INIT_RESOURCE( oqamldebug );
+    qInstallMsgHandler( MessageOutput );
 
     Options::read_options();
 #ifdef Q_WS_X11
