@@ -156,6 +156,7 @@ void  OCamlWatch::debuggerCommand( const QString &cmd, const QString &result)
             }
             item << "" << itWatch->variable << type ;
             QTreeWidgetItem *item_p = new QTreeWidgetItem( item );
+            item_p->setFlags( Qt::ItemIsEnabled );
             QFont f = font();
             f.setBold( modified );
             for ( int i=1 ; i<3 ; i++ )
