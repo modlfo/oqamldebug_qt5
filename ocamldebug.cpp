@@ -13,6 +13,8 @@ OCamlDebug::OCamlDebug( QWidget *parent_p , const QString &ocamldebug, const QSt
     emacsLineInfoRx("^\\x001A\\x001AM([^:]*):([^:]*):([^:]*):([^:\\n]*)\\n*$") ,
     readyRx("^\\(ocd\\) *") ,
     deleteBreakpointRx("^Removed breakpoint ([0-9]+) at [0-9]+ : .*$"),
+    hitBreakpointRx("^Breakpoints? :( [0-9]+)+ ?\\n?$"),
+    hitBreakpointIdRx("( [0-9]+)"),
     newBreakpointRx("^Breakpoint ([0-9]+) at [0-9]+ : file ([^,]*), line ([0-9]+), characters ([0-9]+)-([0-9]+).*$"),
     emacsHaltInfoRx("^\\x001A\\x001AH.*$"),
     timeInfoRx("^Time : ([0-9]+)( - pc : ([0-9]+) - .*)?\\n?$")
@@ -401,6 +403,7 @@ void OCamlDebug::appendText( const QByteArray &text )
         debugger_command = true;
         data =  data.remove( readyRx );
     }
+
     if ( deleteBreakpointRx.indexIn(data) == 0 )
     {
         QString _id = deleteBreakpointRx.cap(1);
@@ -412,6 +415,23 @@ void OCamlDebug::appendText( const QByteArray &text )
             _breakpoints.remove( id );
             emit breakPointList( _breakpoints );
         }
+    }
+    else if ( hitBreakpointRx.indexIn(data) == 0 )
+    {
+        QList<int> ids ;
+        int pos = 0;
+        while ((pos = hitBreakpointIdRx.indexIn(data, pos)) != -1) 
+        {
+            QString sid = hitBreakpointIdRx.cap( 0 );
+            bool ok;
+            int id = sid.simplified().toInt( &ok );
+            if ( ok )
+                ids << id;
+            pos += hitBreakpointIdRx.matchedLength();
+        }
+        qDebug() << "hit" << ids;
+        debugger_command = true;
+        emit breakPointHit( ids );
     }
     else if ( newBreakpointRx.indexIn(data) == 0 )
     {

@@ -6,5 +6,5 @@ if [ -e oqamldebug ]
 then
     ./oqamldebug testme
 else
-    open ./oqamldebug.app --args $PWD/testme
+    ./oqamldebug.app/Contents/MacOS/oqamldebug $PWD/testme
 fi

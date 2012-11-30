@@ -85,6 +85,7 @@ private slots:
 signals:
     void stopDebugging( const QString &, int , int , bool);
     void breakPointList( const BreakPoints & );
+    void breakPointHit( const QList<int> & );
     void debuggerStarted( bool );
     void debuggerCommand( const QString & command, const QString & result );
 private:
@@ -103,6 +104,8 @@ private:
     BreakPoints _breakpoints;
     QRegExp readyRx ;
     QRegExp deleteBreakpointRx ;
+    QRegExp hitBreakpointRx ;
+    QRegExp hitBreakpointIdRx ;
     QRegExp newBreakpointRx ;
     QRegExp emacsHaltInfoRx ;
     QRegExp timeInfoRx ;
