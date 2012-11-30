@@ -73,6 +73,7 @@ void  OCamlBreakpoint::updateBreakpoints()
         if ( hit )
             for ( int i=1 ; i<5 ; i++ )
                 item_p->setBackgroundColor( i, QColor( Qt::red ) );
+        item_p->setFlags( Qt::ItemIsEnabled );
         QIcon delete_icon = QIcon( ":/images/delete.png" );
         item_p->setIcon( 0, delete_icon );
         item_p->setToolTip( 0, tr( "Click to delete this breakpoint." ) );
