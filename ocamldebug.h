@@ -54,6 +54,7 @@ signals:
     void debuggerCommand( const QString & command, const QString & result );
 private:
     void restoreBreakpoints();
+    void saveBreakpoints();
     void processOneQueuedCommand();
     void contextMenuEvent(QContextMenuEvent *event);
     void wheelEvent ( QWheelEvent * event );
@@ -88,6 +89,7 @@ private:
     QList<DebuggerCommand> _command_queue;
     OCamlDebugTime *debugTimeArea;
     QList<int> _breakpoint_hits;
+    QStringList generateBreakpointCommands() const;
 };
 
 class OCamlDebugTime : public QWidget

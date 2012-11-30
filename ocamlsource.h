@@ -68,7 +68,8 @@ class OCamlSource : public QPlainTextEdit
         bool _after;
         int _start_char ;
         int _end_char ;
-        int _breapoint_position;
+        int _breakpoint_line;
+        int _breakpoint_column;
         QString _selected_text;
         QTimer *markCurrentLocationTimer;
         int timer_index;

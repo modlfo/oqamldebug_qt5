@@ -323,13 +323,26 @@ void OCamlDebug::startProcess( const QString &program , const QStringList &argum
     emit debuggerStarted( true );
 }
 
+void OCamlDebug::saveBreakpoints()
+{
+    Options::set_opt( "BREAKPOINT_COMMANDS", generateBreakpointCommands() );
+}
+
 void OCamlDebug::restoreBreakpoints()
 {
-    BreakPoints breakpoints = _breakpoints;
+    QStringList breakpoint_commands = Options::get_opt_strlst( "BREAKPOINT_COMMANDS" );
     _breakpoints.clear();
+    saveBreakpoints();
     emit breakPointList( _breakpoints );
 
-    for (BreakPoints::const_iterator itBreakpoint = breakpoints.begin() ; itBreakpoint != breakpoints.end() ; ++itBreakpoint )
+    for (QStringList::const_iterator itCommand = breakpoint_commands.begin(); itCommand != breakpoint_commands.end(); ++itCommand )
+        debugger( DebuggerCommand( *itCommand, DebuggerCommand::HIDE_ALL_OUTPUT) );
+}
+
+QStringList OCamlDebug::generateBreakpointCommands() const
+{
+    QStringList breakpoint_commands ;
+    for (BreakPoints::const_iterator itBreakpoint = _breakpoints.begin() ; itBreakpoint != _breakpoints.end() ; ++itBreakpoint )
     {
         QFileInfo sourceInfo( itBreakpoint.value().file );
         QString module = sourceInfo.baseName();
@@ -340,23 +353,18 @@ void OCamlDebug::restoreBreakpoints()
             QFile f ( itBreakpoint.value().file );
             if ( f.open( QFile::ReadOnly | QFile::Text ) )
             {
-                int pos = -1;
-                QString src = f.readAll();
-                for ( int l=1 ; l < itBreakpoint.value().fromLine ; l++ )
-                {
-                   pos = src.indexOf( "\n", pos+1 ); 
-                   if ( pos < 0 )
-                       continue;
-                }
-                pos += itBreakpoint.value().fromColumn;
-
-                QString command = QString("break @ %1 # %2")
+                QString command = QString("break @ %1 %2 %3")
                     .arg(module)
-                    .arg( QString::number( pos ) );
-                debugger( DebuggerCommand( command, DebuggerCommand::HIDE_ALL_OUTPUT) );
+                    .arg( QString::number( itBreakpoint.value().toLine  ) )
+                    .arg( QString::number( itBreakpoint.value().toColumn ) );
+
+                breakpoint_commands << command;
             }
         }
     }
+
+    breakpoint_commands.removeDuplicates();
+    return breakpoint_commands;
 }
 
 void OCamlDebug::receiveDataFromProcessStdError()
@@ -415,6 +423,7 @@ void OCamlDebug::appendText( const QByteArray &text )
             _breakpoints.remove( id );
             emit breakPointList( _breakpoints );
         }
+        saveBreakpoints();
     }
     else if ( hitBreakpointRx.indexIn(data) == 0 )
     {
@@ -429,7 +438,6 @@ void OCamlDebug::appendText( const QByteArray &text )
                 ids << id;
             pos += hitBreakpointIdRx.matchedLength();
         }
-        qDebug() << "hit" << ids;
         debugger_command = true;
         _breakpoint_hits = ids;
     }
@@ -456,6 +464,7 @@ void OCamlDebug::appendText( const QByteArray &text )
             _breakpoints[ breakpoint.id ] = breakpoint;
             emit breakPointList( _breakpoints );
         }
+        saveBreakpoints();
     }
     else if ( emacsLineInfoRx.indexIn(data) == 0 )
     {

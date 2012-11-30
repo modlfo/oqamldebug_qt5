@@ -457,9 +457,11 @@ void OCamlSource::newBreakpoint ( )
     if (module.length() > 0)
     {
         module[0] = module[0].toUpper();
-        QString command = QString("break @ %1 # %2")
+        QString command = QString("break @ %1 %2 %3")
             .arg(module)
-            .arg( QString::number( _breapoint_position ) );
+            .arg( QString::number( _breakpoint_line ) )
+            .arg( QString::number( _breakpoint_column ) )
+            ;
         emit debugger( DebuggerCommand( command, DebuggerCommand::HIDE_DEBUGGER_OUTPUT ) );
     }
 }
@@ -472,7 +474,8 @@ void OCamlSource::contextMenuEvent( QContextMenuEvent *event )
     if ( current_cur.hasSelection() )
         cur = current_cur;
 
-    _breapoint_position = mouse_position.position();
+    _breakpoint_line   = mouse_position.blockNumber() + 1;
+    _breakpoint_column = mouse_position.positionInBlock() + 1;
     if ( ! cur.hasSelection() )
     {
         cur.select(QTextCursor::WordUnderCursor);
@@ -541,7 +544,8 @@ void OCamlSource::mousePressEvent ( QMouseEvent * e )
     if ( current_cur.hasSelection() )
         cur = current_cur;
 
-    _breapoint_position = cur.position();
+    _breakpoint_line   = cur.blockNumber() + 1;
+    _breakpoint_column = cur.positionInBlock() + 1;
     if ( ! cur.hasSelection() )
     {
         cur.select(QTextCursor::WordUnderCursor);
