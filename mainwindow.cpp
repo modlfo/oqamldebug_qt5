@@ -3,6 +3,7 @@
 #include "options.h"
 #include "ocamlsource.h"
 #include "ocamldebug.h"
+#include "ocamlbreakpoint.h"
 #include "ocamlwatch.h"
 #include <QFileInfo>
 
@@ -10,6 +11,7 @@ MainWindow::MainWindow(const QStringList &arguments)
 {
     ocamldebug = NULL;
     ocamldebug_dock  = NULL;
+    ocamlbreakpoints_dock  = NULL;
     setWindowIcon( QIcon( ":/images/oqamldebug.png " ) );
     help_p = NULL;
     _arguments = arguments;
@@ -75,6 +77,19 @@ void MainWindow::createDockWindows()
     QList<int> watch_ids = Options::get_opt_intlst( "WATCH_IDS" );
     for (QList<int>::const_iterator itId = watch_ids.begin(); itId != watch_ids.end(); ++itId)
         createWatchWindow( *itId );
+
+    ocamlbreakpoints_dock = new QDockWidget( tr( "Breakpoints" ), this );
+    ocamlbreakpoints_dock->setAllowedAreas( Qt::TopDockWidgetArea | Qt::BottomDockWidgetArea | Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea );
+    ocamlbreakpoints = new OCamlBreakpoint( ocamlbreakpoints_dock );
+    ocamlbreakpoints_dock->setObjectName("Breakpoints");
+    connect( ocamlbreakpoints, SIGNAL( debugger( const DebuggerCommand & ) ), ocamldebug, SLOT( debugger( const DebuggerCommand & ) ) );
+    connect ( ocamldebug , SIGNAL( stopDebugging( const QString &, int , int , bool) ) , ocamlbreakpoints  ,SLOT( stopDebugging( const QString &, int , int , bool) ) );
+    connect ( ocamldebug , SIGNAL( debuggerStarted( bool) ) , ocamlbreakpoints  ,SLOT( debuggerStarted( bool) ) );
+    connect ( ocamldebug , SIGNAL( breakPointList( const BreakPoints &) ) , ocamlbreakpoints ,SLOT( breakPointList( const BreakPoints &) ) );
+    connect ( ocamldebug , SIGNAL( breakPointHit( const QList<int> &) ) , ocamlbreakpoints ,SLOT( breakPointHit( const QList<int> &) ) );
+    ocamlbreakpoints_dock->setWidget( ocamlbreakpoints );
+    addDockWidget( Qt::BottomDockWidgetArea, ocamlbreakpoints_dock );
+    windowMenu->addAction( ocamlbreakpoints_dock->toggleViewAction() );
 }
 
 void MainWindow::createWatchWindow()
@@ -336,6 +351,8 @@ void MainWindow::updateWindowMenu()
         windowMenu->addSeparator();
         windowMenu->addAction( ocamldebug_dock->toggleViewAction() );
     }
+    if ( ocamlbreakpoints_dock )
+        windowMenu->addAction( ocamlbreakpoints_dock->toggleViewAction() );
 
     windowMenu->addAction( separatorAct );
     QList<QMdiSubWindow *> windows = mdiArea->subWindowList();

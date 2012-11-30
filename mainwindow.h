@@ -5,6 +5,7 @@
 #include "ocamldebug.h"
 
 class OCamlSource;
+class OCamlBreakpoint;
 class OCamlDebug;
 class OCamlWatch;
 QT_BEGIN_NAMESPACE
@@ -72,6 +73,7 @@ private:
     void createDockWindows();
     OCamlSource *activeMdiChild();
     OCamlDebug *ocamldebug ;
+    OCamlBreakpoint *ocamlbreakpoints ;
     QMdiSubWindow *findMdiChild(const QString &fileName);
     QMdiSubWindow *findMdiChildNotLoadedFromUser();
 
@@ -120,6 +122,7 @@ private:
 
     QTextBrowser *help_p;
     QDockWidget *ocamldebug_dock ;
+    QDockWidget *ocamlbreakpoints_dock ;
 
     QList<int> _watch_ids;
     QList<OCamlWatch*> _watch_windows;

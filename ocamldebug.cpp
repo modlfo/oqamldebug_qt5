@@ -431,7 +431,7 @@ void OCamlDebug::appendText( const QByteArray &text )
         }
         qDebug() << "hit" << ids;
         debugger_command = true;
-        emit breakPointHit( ids );
+        _breakpoint_hits = ids;
     }
     else if ( newBreakpointRx.indexIn(data) == 0 )
     {
@@ -482,6 +482,8 @@ void OCamlDebug::appendText( const QByteArray &text )
                 }
             }
         }
+        emit breakPointHit( _breakpoint_hits );
+        _breakpoint_hits.clear();
     }
     else if ( timeInfoRx.exactMatch(data) )
     {
@@ -503,6 +505,8 @@ void OCamlDebug::appendText( const QByteArray &text )
             _time_info[blockCount()] = _time ;
             updateDebugTimeAreaWidth( 0 );
         }
+        emit breakPointHit( _breakpoint_hits );
+        _breakpoint_hits.clear();
     }
 
     if ( display )
