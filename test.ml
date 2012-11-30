@@ -3,23 +3,14 @@ open Pervasives
 
 let _ = 
   let s = 0 in
-  let t = [ 
-    "Please\nEnter" ; "jnj" ; "" ; "hhhhhhhh" ; "nkjnkjn" ;
-    "Please\nEnter" ; "jnj" ; "" ; "hhhhhhhh" ; "nkjnkjn" ;
-    "Please\nEnter" ; "jnj" ; "" ; "hhhhhhhh" ; "nkjnkjn" ;
-    "Please\nEnter" ; "jnj" ; "" ; "hhhhhhhh" ; "nkjnkjn" ;
-    "Please\nEnter" ; "jnj" ; "" ; "hhhhhhhh" ; "nkjnkjn" ;
-    "Please\nEnter" ; "jnj" ; "" ; "hhhhhhhh" ; "nkjnkjn" ;
-    "Please\nEnter" ; "jnj" ; "" ; "hhhhhhhh" ; "nkjnkjn" ;
-    "Please\nEnter" ; "jnj" ; "" ; "hhhhhhhh" ; "nkjnkjn" ;
-    "Please\nEnter" ; "jnj" ; "" ; "hhhhhhhh" ; "nkjnkjn" ;
-    "Please\nEnter" ; "jnj" ; "" ; "hhhhhhhh" ; "nkjnkjn" ;
-  ] in
+  let t2 = [ "a" ; "b" ] in
+  let t1 = [ "c" ; "d" ] in
+  let t = [ t1 ; t2 ] in
     for i = 0 to 10
     do
-  printf "." ;
+      printf "." ;
     done ;
-  printf "Size? :" ;
-  let m = read_int () in
-  printf "%i\n" m
+    printf "Size? :" ;
+    let m = read_int () in
+      printf "%i\n" m
 ;;

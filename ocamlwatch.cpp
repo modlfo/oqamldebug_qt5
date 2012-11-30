@@ -162,7 +162,10 @@ void  OCamlWatch::debuggerCommand( const QString &cmd, const QString &result)
             for ( int i=1 ; i<3 ; i++ )
             {
                 item_p->setFont( i, f );
-                item_p->setToolTip( i, tr( "Click to switch between the display and print mode." ) );
+                if ( itWatch->display )
+                    item_p->setToolTip( i, tr( "Click to print all sub-values of '%0'." ).arg( itWatch->variable ) );
+                else
+                    item_p->setToolTip( i, tr( "Click to hide all sub-values of '%0'." ).arg( itWatch->variable ) );
                 item_p->setTextAlignment( i, Qt::AlignLeft | Qt::ElideRight | Qt::AlignVCenter );
             }
             QLabel *value_p = new QLabel( value );
