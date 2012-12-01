@@ -19,6 +19,9 @@ OCamlDebug::OCamlDebug( QWidget *parent_p , const QString &ocamldebug, const QSt
     emacsHaltInfoRx("^\\x001A\\x001AH.*$"),
     timeInfoRx("^Time : ([0-9]+)( - pc : ([0-9]+) - .*)?\\n?$")
 {
+    _debuggerOutputsRx.append( QRegExp( "^No such frame\\.\\n?$" ) );
+    _debuggerOutputsRx.append( QRegExp( "^#[0-9]*  *Pc : [0-9]+ .*$" ) );
+
     file_watch_p = NULL;
     debugTimeArea = new OCamlDebugTime( this );
     connect( this, SIGNAL( blockCountChanged( int ) ), this, SLOT( updateDebugTimeAreaWidth( int ) ) );
@@ -516,6 +519,14 @@ void OCamlDebug::appendText( const QByteArray &text )
         }
         emit breakPointHit( _breakpoint_hits );
         _breakpoint_hits.clear();
+    }
+    else
+    {
+        for (QList<QRegExp>::iterator itRx = _debuggerOutputsRx.begin() ; itRx !=_debuggerOutputsRx.end() ; ++itRx )
+        {
+            if ( itRx->exactMatch(data) )
+                debugger_command = true;
+        }
     }
 
     if ( display )

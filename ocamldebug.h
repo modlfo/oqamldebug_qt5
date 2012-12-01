@@ -74,6 +74,7 @@ private:
     QRegExp newBreakpointRx ;
     QRegExp emacsHaltInfoRx ;
     QRegExp timeInfoRx ;
+    QList<QRegExp> _debuggerOutputsRx;
     QString _ocamldebug;
     QString _ocamlapp;
     QStringList _arguments;

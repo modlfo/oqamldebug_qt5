@@ -94,6 +94,7 @@ OCamlDebugHighlighter::OCamlDebugHighlighter(QTextDocument *parent)
         << " - pc : [0-9]+"
         << " - module [A-Z][a-z.A-Z0-9_]*"
         << "Program exit."
+        << "^Backtrace:"
         << "Beginning of program."
         << "No source file for [A-Z][a-z.A-Z0-9_]*\\."
         << "Breakpoint [0-9]+ at [0-9]+ : .*$"
@@ -113,6 +114,7 @@ OCamlDebugHighlighter::OCamlDebugHighlighter(QTextDocument *parent)
 
     QStringList errorPatterns;
     errorPatterns 
+        << "^No such frame\\."
         << "^Syntax error\\."
         << "^Unknown command\\."
         << "^Ambiguous command\\."
