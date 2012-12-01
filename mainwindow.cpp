@@ -15,6 +15,7 @@ MainWindow::MainWindow(const QStringList &arguments)
     ocamlbreakpoints_dock  = NULL;
     ocamlstack_dock  = NULL;
     setWindowIcon( QIcon( ":/images/oqamldebug.png " ) );
+    setDockNestingEnabled( true );
     help_p = NULL;
     _arguments = arguments;
     if (_arguments.isEmpty())

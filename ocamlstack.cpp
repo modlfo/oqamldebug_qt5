@@ -53,12 +53,12 @@ void OCamlStack::closeEvent(QCloseEvent *event)
 
 void OCamlStack::stopDebugging( const QString &file, int start_char, int end_char, bool after ) 
 {
-        _file          = file;
-        _start_char    = start_char;
-        _end_char      = end_char;
-        _after         = after;
-        updateStack();
-        _current_frame = 0;
+    _file          = file;
+    _start_char    = start_char;
+    _end_char      = end_char;
+    _after         = after;
+    updateStack();
+    _current_frame = 0;
 }
 
 void OCamlStack::updateStack()
