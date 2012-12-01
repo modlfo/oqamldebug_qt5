@@ -313,7 +313,7 @@ void MainWindow::about()
 {
     QMessageBox::about( this, tr( "About OQamlDebug" ),
                         tr( "<b>OQamlDebug</b> graphical frontend for OCamlDebug<BR>"
-                            "License: GPLv3 (C) Sebastien Fricker"
+                            "License: <a href=\"http://www.gnu.org/licenses/gpl-3.0.en.html\">GPLv3</a> &copy;&nbsp;<a href=\"mailto:sebastien.fricker@gmail.com\">S&eacute;bastien Fricker</a>"
                             ));
                             
 }
