@@ -6,6 +6,7 @@ HEADERS       = mainwindow.h \
                 ocamldebughighlighter.h \
                 ocamldebug.h \
                 ocamlwatch.h \
+                ocamlstack.h \
                 breakpoint.h \
                 debuggercommand.h \
                 ocamlbreakpoint.h \
@@ -15,6 +16,7 @@ HEADERS       = mainwindow.h \
                 ocamlsource.h
 SOURCES       = main.cpp \
                 ocamlbreakpoint.cpp \
+                ocamlstack.cpp \
                 ocamlsourcehighlighter.cpp \
                 ocamldebughighlighter.cpp \
                 filesystemwatcher.cpp \

@@ -5,6 +5,7 @@
 #include "ocamldebug.h"
 
 class OCamlSource;
+class OCamlStack;
 class OCamlBreakpoint;
 class OCamlDebug;
 class OCamlWatch;
@@ -74,6 +75,7 @@ private:
     OCamlSource *activeMdiChild();
     OCamlDebug *ocamldebug ;
     OCamlBreakpoint *ocamlbreakpoints ;
+    OCamlStack *ocamlstack ;
     QMdiSubWindow *findMdiChild(const QString &fileName);
     QMdiSubWindow *findMdiChildNotLoadedFromUser();
 
@@ -123,6 +125,7 @@ private:
     QTextBrowser *help_p;
     QDockWidget *ocamldebug_dock ;
     QDockWidget *ocamlbreakpoints_dock ;
+    QDockWidget *ocamlstack_dock ;
 
     QList<int> _watch_ids;
     QList<OCamlWatch*> _watch_windows;

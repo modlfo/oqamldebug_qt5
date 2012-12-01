@@ -20,7 +20,7 @@ OCamlDebug::OCamlDebug( QWidget *parent_p , const QString &ocamldebug, const QSt
     timeInfoRx("^Time : ([0-9]+)( - pc : ([0-9]+) - .*)?\\n?$")
 {
     _debuggerOutputsRx.append( QRegExp( "^No such frame\\.\\n?$" ) );
-    _debuggerOutputsRx.append( QRegExp( "^#[0-9]*  *Pc : [0-9]+ .*$" ) );
+    _debuggerOutputsRx.append( QRegExp( "^#([0-9]+)  *Pc : [0-9]+ .*$" ) );
 
     file_watch_p = NULL;
     debugTimeArea = new OCamlDebugTime( this );
@@ -616,6 +616,8 @@ void OCamlDebug::debugger( const DebuggerCommand &command )
 
 void OCamlDebug::processOneQueuedCommand()
 {
+    if ( process_p == NULL )
+        return ;
     while ( !_command_queue.isEmpty() )
     {
         QString command = _command_queue.first().command();

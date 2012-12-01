@@ -6,5 +6,5 @@ if [ -e oqamldebug ]
 then
     ./oqamldebug testme
 else
-    ./oqamldebug.app/Contents/MacOS/oqamldebug $PWD/testme
+    $PWD/oqamldebug.app/Contents/MacOS/oqamldebug $PWD/testme
 fi
