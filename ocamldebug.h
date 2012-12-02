@@ -12,16 +12,17 @@
 #include "debuggercommand.h"
 
 class OCamlDebugTime;
+class OCamlRun;
 
 class OCamlDebug : public QPlainTextEdit
 {
     Q_OBJECT
 
 public:
-    OCamlDebug( QWidget * parent_p, const QString &, const QStringList &);
+    OCamlDebug( QWidget *parent_p , OCamlRun *ocamlrun, const QString &ocamldebug, const QStringList &ocamldebug_args, const QString & app, const QStringList &app_arguments );
     virtual ~OCamlDebug( );
-    void setArguments(const QStringList &);
-    void setOCamlDebug(const QString &);
+    void setApplication(const QString &application, const QStringList &arguments );
+    void setOCamlDebug(const QString &, const QStringList &ocamldebug_args);
     int debugTimeAreaWidth();
     void debugTimeAreaPaintEvent( QPaintEvent *event );
     const QMap<int,int> & timeInfo() const { return _time_info; }
@@ -59,7 +60,7 @@ private:
     void contextMenuEvent(QContextMenuEvent *event);
     void wheelEvent ( QWheelEvent * event );
     void saveLRU(const QString &command);
-    void startProcess( const QString &program , const QStringList &arguments );
+    void startProcess( const QString &ocamldebug, const QStringList &ocamldebug_args, const QString &program , const QStringList &arguments );
     void clear();
     void readChannel();
     void appendText(const QByteArray &);
@@ -74,10 +75,12 @@ private:
     QRegExp newBreakpointRx ;
     QRegExp emacsHaltInfoRx ;
     QRegExp timeInfoRx ;
+    QRegExp ocamlrunConnectionRx ;
     QList<QRegExp> _debuggerOutputsRx;
     QString _ocamldebug;
     QString _ocamlapp;
-    QStringList _arguments;
+    QStringList _app_arguments;
+    QStringList _ocamldebug_arguments;
     QString _command_line,_command_line_last,_command_line_backup;
     QMap<int,int> _time_info;
     int _time;
@@ -91,6 +94,8 @@ private:
     OCamlDebugTime *debugTimeArea;
     QList<int> _breakpoint_hits;
     QStringList generateBreakpointCommands() const;
+    OCamlRun *_ocamlrun_p;
+    int _port;
 };
 
 class OCamlDebugTime : public QWidget

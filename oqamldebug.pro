@@ -2,12 +2,14 @@
 VERSION=0.0.0
 
 HEADERS       = mainwindow.h \
+                arguments.h \
                 ocamlsourcehighlighter.h \
                 ocamldebughighlighter.h \
                 ocamldebug.h \
                 ocamlwatch.h \
                 ocamlstack.h \
                 breakpoint.h \
+                ocamlrun.h \
                 debuggercommand.h \
                 ocamlbreakpoint.h \
                 highlighter.h \
@@ -15,6 +17,8 @@ HEADERS       = mainwindow.h \
                 options.h \
                 ocamlsource.h
 SOURCES       = main.cpp \
+                arguments.cpp \
+                ocamlrun.cpp \
                 ocamlbreakpoint.cpp \
                 ocamlstack.cpp \
                 ocamlsourcehighlighter.cpp \

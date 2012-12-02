@@ -1,7 +1,9 @@
 #include "mainwindow.h"
 #include <QtGui>
 #include "options.h"
+#include "arguments.h"
 #include "ocamlsource.h"
+#include "ocamlrun.h"
 #include "ocamldebug.h"
 #include "ocamlbreakpoint.h"
 #include "ocamlstack.h"
@@ -14,6 +16,7 @@ MainWindow::MainWindow(const QStringList &arguments)
     ocamldebug_dock  = NULL;
     ocamlbreakpoints_dock  = NULL;
     ocamlstack_dock  = NULL;
+    ocamlrun_dock  = NULL;
     setWindowIcon( QIcon( ":/images/oqamldebug.png " ) );
     setDockNestingEnabled( true );
     help_p = NULL;
@@ -49,6 +52,16 @@ MainWindow::MainWindow(const QStringList &arguments)
            exit(0);
         setOCamlDebug();
     }
+    _ocamlrun = Options::get_opt_str("OCAMLRUN" , QString() );
+    while (_ocamlrun.isEmpty())
+    {
+        if (QMessageBox::warning(this, tr("ocamlrun location"),
+                tr("It is the first time that you start OQamlRun, please enter the path to ocamlrun executable."),
+                QMessageBox::Ok, QMessageBox::Abort )
+            != QMessageBox::Ok)
+           exit(0);
+        setOCamlRun();
+    }
     createActions();
     createMenus();
     createToolBars();
@@ -64,13 +77,23 @@ MainWindow::MainWindow(const QStringList &arguments)
 
 void MainWindow::createDockWindows()
 {
+    Arguments args( _arguments );
+    ocamlrun_dock = new QDockWidget( tr( "Application Output" ), this );
+    ocamlrun_dock->setAllowedAreas( Qt::TopDockWidgetArea | Qt::BottomDockWidgetArea | Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea );
+    ocamlrun = new OCamlRun( ocamlrun_dock, _ocamlrun , args.ocamlApp(), args.ocamlAppArguments() );
+    ocamlrun_dock->setObjectName("OCamlRun");
+    ocamlrun_dock->setWidget( ocamlrun );
+    addDockWidget( Qt::BottomDockWidgetArea, ocamlrun_dock );
+    windowMenu->addAction( ocamlrun_dock->toggleViewAction() );
+
     ocamldebug_dock = new QDockWidget( tr( "OCamlDebug" ), this );
     ocamldebug_dock->setAllowedAreas( Qt::TopDockWidgetArea | Qt::BottomDockWidgetArea | Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea );
-    ocamldebug = new OCamlDebug( ocamldebug_dock , _ocamldebug, _arguments);
+    ocamldebug = new OCamlDebug( ocamldebug_dock , ocamlrun, _ocamldebug, args.ocamlDebugArguments(), args.ocamlApp(), args.ocamlAppArguments() );
     ocamldebug_dock->setObjectName("OCamlDebugDock");
     connect ( ocamldebug , SIGNAL( stopDebugging( const QString &, int , int , bool) ) , this ,SLOT( stopDebugging( const QString &, int , int , bool) ) );
     connect ( ocamldebug , SIGNAL( debuggerStarted( bool) ) , this ,SLOT( debuggerStarted( bool) ) );
     connect ( ocamldebug , SIGNAL( breakPointList( const BreakPoints &) ) , this ,SLOT( breakPointList( const BreakPoints &) ) );
+    connect ( ocamldebug , SIGNAL( debuggerStarted( bool) ) , ocamlrun ,SLOT( debuggerStarted( bool) ) );
     ocamldebug_dock->setWidget( ocamldebug );
     addDockWidget( Qt::BottomDockWidgetArea, ocamldebug_dock );
     windowMenu->addAction( ocamldebug_dock->toggleViewAction() );
@@ -133,6 +156,7 @@ void MainWindow::createWatchWindow( int watch_id )
     connect ( ocamldebug , SIGNAL( debuggerCommand( const QString &, const QString &) ) , ocamlwatch ,SLOT( debuggerCommand( const QString &, const QString &) ) );
     connect( ocamlwatch, SIGNAL( debugger( const DebuggerCommand & ) ), ocamldebug, SLOT( debugger( const DebuggerCommand & ) ) );
     connect( ocamlwatch, SIGNAL( destroyed( QObject* ) ), this, SLOT( watchWindowDestroyed( QObject* ) ) );
+    connect ( ocamldebug , SIGNAL( debuggerStarted( bool) ) , ocamlwatch ,SLOT( debuggerStarted( bool) ) );
     dock->setObjectName(QString("OCamlWatchDock%1").arg( QString::number(watch_id) ));
     dock->setWidget( ocamlwatch );
     addDockWidget( Qt::BottomDockWidgetArea, dock );
@@ -261,7 +285,11 @@ void MainWindow::setOCamlDebugArgs()
         _arguments = text.split(" ", QString::SkipEmptyParts);
         Options::set_opt("ARGUMENTS",_arguments);
         if (ocamldebug)
-            ocamldebug->setArguments( _arguments );
+        {
+            Arguments args( _arguments );
+            ocamldebug->setApplication( args.ocamlApp(), args.ocamlAppArguments() );
+            ocamldebug->setOCamlDebug( _ocamldebug, args.ocamlDebugArguments() );
+        }
     }
 }
 
@@ -275,6 +303,31 @@ void MainWindow::setWorkingDirectory()
     {
         Options::set_opt("WORKING_DIRECTORY", working_directory);
         QDir::setCurrent( Options::get_opt_str("WORKING_DIRECTORY") );
+    }
+}
+
+void MainWindow::setOCamlRun()
+{
+    QFileInfo ocamlrun_exx_info ( Options::get_opt_str("OCAMLRUN") );
+    QString ocamlrun_exx = QFileDialog::getOpenFileName(this, 
+            tr("OCamlRun Executable"),
+            ocamlrun_exx_info.absolutePath(),
+#if defined(Q_OS_UNIX)
+            "OCamlRun (ocamlrun)"
+#else
+            "OCamlRun (ocamlrun.exe)"
+#endif
+#if defined(Q_OS_MAC)
+            ,NULL,
+            QFileDialog::DontUseNativeDialog
+#endif
+            );
+    if (!ocamlrun_exx.isEmpty())
+    {
+        _ocamlrun=ocamlrun_exx;
+        Options::set_opt("OCAMLRUN", _ocamlrun);
+        if (ocamlrun)
+            ocamlrun->setOCamlRun( _ocamlrun );
     }
 }
 
@@ -299,7 +352,10 @@ void MainWindow::setOCamlDebug()
         _ocamldebug=ocamldebug_exx;
         Options::set_opt("OCAMLDEBUG", _ocamldebug);
         if (ocamldebug)
-            ocamldebug->setOCamlDebug( _ocamldebug );
+        {
+            Arguments args( _arguments );
+            ocamldebug->setOCamlDebug( _ocamldebug, args.ocamlDebugArguments() );
+        }
     }
 }
 
@@ -371,6 +427,8 @@ void MainWindow::updateWindowMenu()
         windowMenu->addAction( ocamlbreakpoints_dock->toggleViewAction() );
     if ( ocamlstack_dock )
         windowMenu->addAction( ocamlstack_dock->toggleViewAction() );
+    if ( ocamlrun_dock )
+        windowMenu->addAction( ocamlrun_dock->toggleViewAction() );
 
     windowMenu->addAction( separatorAct );
     QList<QMdiSubWindow *> windows = mdiArea->subWindowList();
@@ -439,6 +497,10 @@ void MainWindow::createActions()
     setOcamlDebugAct = new QAction(  tr( "&Set OCamlDebug Executable..." ), this );
     setOcamlDebugAct->setStatusTip( tr( "Set OCamlDebug executable" ) );
     connect( setOcamlDebugAct, SIGNAL( triggered() ), this, SLOT( setOCamlDebug() ) );
+
+    setOcamlRunAct = new QAction(  tr( "&Set OCamlRun Executable..." ), this );
+    setOcamlRunAct->setStatusTip( tr( "Set OCamlRun executable" ) );
+    connect( setOcamlRunAct, SIGNAL( triggered() ), this, SLOT( setOCamlRun() ) );
 
     setOcamlDebugArgsAct = new QAction(  tr( "&Command Line Arguments..." ), this );
     setOcamlDebugArgsAct->setStatusTip( tr( "Set OCamlDebug command line arguments" ) );
@@ -574,6 +636,7 @@ void MainWindow::createMenus()
 {
     mainMenu = menuBar()->addMenu( tr( "&Main" ) );
     mainMenu->addAction( setOcamlDebugAct );
+    mainMenu->addAction( setOcamlRunAct );
     mainMenu->addAction( setOcamlDebugArgsAct );
     mainMenu->addAction( setWorkingDirectoryAct );
     mainMenu->addAction( openAct );

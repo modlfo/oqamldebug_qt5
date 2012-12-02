@@ -2,6 +2,7 @@
 #include <QtDebug>
 #include "ocamldebughighlighter.h"
 #include "ocamldebug.h"
+#include "ocamlrun.h"
 #include "options.h"
 #if !defined(Q_OS_WIN32)
 #include <sys/types.h>
@@ -9,7 +10,7 @@
 #endif
 
 
-OCamlDebug::OCamlDebug( QWidget *parent_p , const QString &ocamldebug, const QStringList &arguments ) : QPlainTextEdit(parent_p),
+OCamlDebug::OCamlDebug( QWidget *parent_p , OCamlRun *ocamlrun_p, const QString &ocamldebug, const QStringList &ocamldebug_args, const QString & app, const QStringList &app_arguments ) : QPlainTextEdit(parent_p),
     emacsLineInfoRx("^\\x001A\\x001AM([^:]*):([^:]*):([^:]*):([^:\\n]*)\\n*$") ,
     readyRx("^\\(ocd\\) *") ,
     deleteBreakpointRx("^Removed breakpoint ([0-9]+) at [0-9]+ : .*$"),
@@ -17,10 +18,16 @@ OCamlDebug::OCamlDebug( QWidget *parent_p , const QString &ocamldebug, const QSt
     hitBreakpointIdRx("( [0-9]+)"),
     newBreakpointRx("^Breakpoint ([0-9]+) at [0-9]+ : file ([^,]*), line ([0-9]+), characters ([0-9]+)-([0-9]+).*$"),
     emacsHaltInfoRx("^\\x001A\\x001AH.*$"),
-    timeInfoRx("^Time : ([0-9]+)( - pc : ([0-9]+) - .*)?\\n?$")
+    timeInfoRx("^Time : ([0-9]+)( - pc : ([0-9]+) - .*)?\\n?$"),
+    ocamlrunConnectionRx("^Waiting for connection\\.\\.\\.\\(the socket is localhost:[0-9]+\\)\\n?$"),
+    _ocamlrun_p( ocamlrun_p ),
+    _port( 8044 )
 {
+    
     _debuggerOutputsRx.append( QRegExp( "^No such frame\\.\\n?$" ) );
     _debuggerOutputsRx.append( QRegExp( "^#([0-9]+)  *Pc : [0-9]+ .*$" ) );
+    _debuggerOutputsRx.append( QRegExp( "^Loading program\\.\\.\\.[\\n ]+$" ) );
+    _debuggerOutputsRx.append( QRegExp( "^done\\.[\\n ]+$" ) );
 
     file_watch_p = NULL;
     debugTimeArea = new OCamlDebugTime( this );
@@ -29,6 +36,7 @@ OCamlDebug::OCamlDebug( QWidget *parent_p , const QString &ocamldebug, const QSt
 
     updateDebugTimeAreaWidth( 0 );
     emit debuggerStarted( false );
+    setEnabled( false );
     _lru = Options::get_opt_strlst ("OCAMLDEBUG_COMMANDS");
     setReadOnly( false );
     setUndoRedoEnabled( false );
@@ -38,8 +46,8 @@ OCamlDebug::OCamlDebug( QWidget *parent_p , const QString &ocamldebug, const QSt
     QFont font("Monospace");
     font.setStyleHint(QFont::TypeWriter);
     setFont(font);
-    setArguments( arguments );
-    setOCamlDebug( ocamldebug );
+    setApplication( app, app_arguments );
+    setOCamlDebug( ocamldebug, ocamldebug_args );
 
     setCursorWidth(3);
 }
@@ -59,43 +67,35 @@ void OCamlDebug::clear()
     _lru_position = -1 ;
     if ( process_p )
     {
+        emit debuggerStarted( false );
         process_p->terminate();
-        if (process_p->waitForFinished( 10000 ) )
+        if (process_p->waitForFinished( 1000 ) )
             process_p->kill();
         process_p->close();
         delete process_p;
         process_p = NULL;
-        emit debuggerStarted( false );
+        setEnabled( false );
     }
     QPlainTextEdit::clear();
 }
 
-void OCamlDebug::setOCamlDebug( const QString &ocamldebug )
+void OCamlDebug::setOCamlDebug( const QString &ocamldebug, const QStringList & arguments )
 {
     _ocamldebug = ocamldebug ;
+    _ocamldebug_arguments = arguments ;
+    _ocamldebug_arguments 
+        << "-emacs" 
+        ;
 }
 
-void OCamlDebug::setArguments( const QStringList &arguments )
+void OCamlDebug::setApplication( const QString &app, const QStringList &arguments )
 {
-    _ocamlapp.clear();
-    foreach ( QString a , arguments )
-    {
-        QFileInfo arg_info(a);
-        if ( (!arg_info.isDir())
-                && arg_info.exists()
-                && arg_info.isExecutable()
-           )
-        {
-            _ocamlapp = arg_info.absoluteFilePath();
-            if ( file_watch_p )
-                delete file_watch_p;
-            file_watch_p = new FileSystemWatcher( _ocamlapp );
-            connect ( file_watch_p , SIGNAL( fileChanged ( ) ) , this , SLOT( fileChanged () ) , Qt::QueuedConnection );
-            break;
-        }
-    }
-    _arguments.clear();
-    _arguments << "-emacs" << arguments ;
+    _ocamlapp = app;
+    _app_arguments = arguments ;
+    if ( file_watch_p )
+        delete file_watch_p;
+    file_watch_p = new FileSystemWatcher( _ocamlapp );
+    connect ( file_watch_p , SIGNAL( fileChanged ( ) ) , this , SLOT( fileChanged () ) , Qt::QueuedConnection );
 }
 
 void OCamlDebug::fileChanged ( )
@@ -109,7 +109,7 @@ void OCamlDebug::fileChanged ( )
 
 void OCamlDebug::startDebug()
 {
-    startProcess (_ocamldebug , _arguments);
+    startProcess (_ocamldebug , _ocamldebug_arguments, _ocamlapp, _app_arguments);
 }
 
 void OCamlDebug::stopDebug()
@@ -302,13 +302,17 @@ void OCamlDebug::keyReleaseEvent ( QKeyEvent * e )
     QPlainTextEdit::keyReleaseEvent ( e );
 }
 
-void OCamlDebug::startProcess( const QString &program , const QStringList &arguments )
+void OCamlDebug::startProcess( const QString &ocamldebug, const QStringList & ocamldebug_args, const QString &app , const QStringList &app_arguments )
 {
     clear();
     _time_info.clear();
     _time = -1 ;
     _command_queue.clear();
     _command_queue << DebuggerCommand( "", DebuggerCommand::IMMEDIATE_COMMAND ) ;
+    QString program = ocamldebug ;
+    QStringList arguments;
+    arguments << ocamldebug_args << app << app_arguments ;
+
     process_p =  new QProcess(this) ;
     process_p->setProcessChannelMode(QProcess::MergedChannels);
     connect ( process_p , SIGNAL( readyReadStandardOutput() ) , this , SLOT( receiveDataFromProcessStdOutput()) );
@@ -321,9 +325,13 @@ void OCamlDebug::startProcess( const QString &program , const QStringList &argum
         return;
     }
 
+    _ocamlrun_p->setApplication( _ocamlapp, _app_arguments );
+    debugger( DebuggerCommand( "set loadingmode manual", DebuggerCommand::HIDE_ALL_OUTPUT ) );
+    debugger( DebuggerCommand( "set socket localhost:"+QString::number(_port), DebuggerCommand::HIDE_DEBUGGER_OUTPUT ) );
     debugger( DebuggerCommand( "goto 0", DebuggerCommand::HIDE_ALL_OUTPUT ) );
     restoreBreakpoints();
     emit debuggerStarted( true );
+    setEnabled( true );
 }
 
 void OCamlDebug::saveBreakpoints()
@@ -507,6 +515,11 @@ void OCamlDebug::appendText( const QByteArray &text )
             debugger_command = true;
             _time = t;
         }
+    }
+    else if ( ocamlrunConnectionRx.exactMatch(data) )
+    {
+        debugger_command = true;
+        _ocamlrun_p->startApplication( _port );
     }
     else if ( emacsHaltInfoRx.exactMatch(data) )
     {

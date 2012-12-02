@@ -240,3 +240,9 @@ void OCamlWatch::expressionClicked( QTreeWidgetItem *item_p , int column )
     }
 }
 
+
+void OCamlWatch::debuggerStarted( bool b )
+{
+    setEnabled( b );
+}
+

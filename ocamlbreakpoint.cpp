@@ -98,8 +98,9 @@ void OCamlBreakpoint::expressionClicked( QTreeWidgetItem *item_p , int column )
     }
 }
 
-void OCamlBreakpoint::debuggerStarted( bool )
+void OCamlBreakpoint::debuggerStarted( bool b )
 {
+    setEnabled( b );
 }
 
 void  OCamlBreakpoint::breakPointList( const BreakPoints &b )

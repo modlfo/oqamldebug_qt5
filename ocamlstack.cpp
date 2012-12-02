@@ -144,6 +144,7 @@ void OCamlStack::expressionClicked( QTreeWidgetItem *item_p , int )
         emit debugger( DebuggerCommand( "frame "+item_p->text(0) , DebuggerCommand::HIDE_ALL_OUTPUT ) );
 }
 
-void OCamlStack::debuggerStarted(bool)
+void OCamlStack::debuggerStarted(bool b)
 {
+    setEnabled( b );
 }

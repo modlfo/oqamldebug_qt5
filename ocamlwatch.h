@@ -35,6 +35,7 @@ public slots:
     void watch( const QString & v, bool display );
     void stopDebugging( const QString &, int , int , bool) ;
     void  debuggerCommand( const QString &, const QString &);
+    void debuggerStarted(bool b);
 protected slots:
     void columnResized( int logical_index, int old_size, int new_size );
     void addNewValue();

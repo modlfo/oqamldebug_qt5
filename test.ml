@@ -1,4 +1,4 @@
-open Printf
+open Format
 open Pervasives
 
 let rec fact n = 
@@ -7,6 +7,8 @@ let rec fact n =
     | n -> n * ( fact ( n - 1 ) ) 
 
 let _ = 
-  let n = 5 in
+  for n = 0 to 10 
+  do
     printf "fact(%i) = %i\n" n (fact n)
+  done
 ;;

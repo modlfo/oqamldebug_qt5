@@ -32,9 +32,9 @@ signals:
     bool debugger( const DebuggerCommand & ) ;
 public slots:
     void updateStack();
-    void debuggerStarted(bool b);
     void stopDebugging( const QString &, int , int , bool) ;
     void  debuggerCommand( const QString &, const QString &);
+    void debuggerStarted(bool b);
 protected slots:
     void expressionClicked( QTreeWidgetItem * , int );
 protected:

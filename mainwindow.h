@@ -5,6 +5,7 @@
 #include "ocamldebug.h"
 
 class OCamlSource;
+class OCamlRun;
 class OCamlStack;
 class OCamlBreakpoint;
 class OCamlDebug;
@@ -47,6 +48,7 @@ private slots:
     void debugNext();
     void debugPrevious();
     void setOCamlDebug();
+    void setOCamlRun();
     void setWorkingDirectory();
     void setOCamlDebugArgs();
     void about();
@@ -76,6 +78,7 @@ private:
     OCamlDebug *ocamldebug ;
     OCamlBreakpoint *ocamlbreakpoints ;
     OCamlStack *ocamlstack ;
+    OCamlRun *ocamlrun ;
     QMdiSubWindow *findMdiChild(const QString &fileName);
     QMdiSubWindow *findMdiChildNotLoadedFromUser();
 
@@ -93,6 +96,7 @@ private:
     QAction *openAct;
     QAction *createWatchWindowAct;
     QAction *setOcamlDebugAct;
+    QAction *setOcamlRunAct;
     QAction *setWorkingDirectoryAct;
     QAction *setOcamlDebugArgsAct;
     QAction *exitAct;
@@ -109,6 +113,7 @@ private:
     QAction *aboutQtAct;
     QStringList _arguments;
     QString _ocamldebug;
+    QString _ocamlrun;
 
     QAction *debuggerStartAct;
     QAction *debugUpAct;
@@ -126,6 +131,7 @@ private:
     QDockWidget *ocamldebug_dock ;
     QDockWidget *ocamlbreakpoints_dock ;
     QDockWidget *ocamlstack_dock ;
+    QDockWidget *ocamlrun_dock ;
 
     QList<int> _watch_ids;
     QList<OCamlWatch*> _watch_windows;
