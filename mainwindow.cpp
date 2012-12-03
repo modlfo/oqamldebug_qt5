@@ -98,8 +98,10 @@ void MainWindow::createDockWindows()
     connect ( ocamldebug , SIGNAL( breakPointList( const BreakPoints &) ) , this ,SLOT( breakPointList( const BreakPoints &) ) );
     connect ( ocamldebug , SIGNAL( debuggerStarted( bool) ) , ocamlrun ,SLOT( debuggerStarted( bool) ) );
     ocamldebug_dock->setWidget( ocamldebug );
+    ocamldebug_dock->toggleViewAction()->setIcon( QIcon( ":/images/oqamldebug.png" ) );
     addDockWidget( Qt::BottomDockWidgetArea, ocamldebug_dock );
     windowMenu->addAction( ocamldebug_dock->toggleViewAction() );
+    debugWindowToolBar->addAction( ocamldebug_dock->toggleViewAction() );
 
     ocamldebug->startDebug();
 
