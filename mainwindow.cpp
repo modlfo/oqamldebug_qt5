@@ -87,7 +87,9 @@ void MainWindow::createDockWindows()
     ocamlrun_dock->setObjectName("OCamlRun");
     ocamlrun_dock->setWidget( ocamlrun );
     addDockWidget( Qt::BottomDockWidgetArea, ocamlrun_dock );
+    ocamlrun_dock->toggleViewAction()->setIcon( QIcon( ":/images/terminal.png" ) );
     windowMenu->addAction( ocamlrun_dock->toggleViewAction() );
+    debugWindowToolBar->addAction( ocamlrun_dock->toggleViewAction() );
 
     ocamldebug_dock = new QDockWidget( tr( "OCamlDebug" ), this );
     ocamldebug_dock->setAllowedAreas( Qt::TopDockWidgetArea | Qt::BottomDockWidgetArea | Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea );
