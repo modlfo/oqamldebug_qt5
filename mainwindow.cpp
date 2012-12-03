@@ -133,7 +133,9 @@ void MainWindow::createDockWindows()
     connect ( ocamldebug , SIGNAL( debuggerCommand( const QString &, const QString &) ) , ocamlstack ,SLOT( debuggerCommand( const QString &, const QString &) ) );
     ocamlstack_dock->setWidget( ocamlstack );
     addDockWidget( Qt::BottomDockWidgetArea, ocamlstack_dock );
+    ocamlstack_dock->toggleViewAction()->setIcon( QIcon( ":/images/callstack.png" ) );
     windowMenu->addAction( ocamlstack_dock->toggleViewAction() );
+    debugWindowToolBar->addAction( ocamlstack_dock->toggleViewAction() );
 }
 
 void MainWindow::createWatchWindow()
