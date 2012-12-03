@@ -93,6 +93,7 @@ private:
     QToolBar *mainToolBar;
     QToolBar *editToolBar;
     QToolBar *debugToolBar;
+    QToolBar *debugWindowToolBar;
     QAction *openAct;
     QAction *createWatchWindowAct;
     QAction *setOcamlDebugAct;

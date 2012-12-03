@@ -118,7 +118,9 @@ void MainWindow::createDockWindows()
     connect ( ocamldebug , SIGNAL( breakPointHit( const QList<int> &) ) , ocamlbreakpoints ,SLOT( breakPointHit( const QList<int> &) ) );
     ocamlbreakpoints_dock->setWidget( ocamlbreakpoints );
     addDockWidget( Qt::BottomDockWidgetArea, ocamlbreakpoints_dock );
+    ocamlbreakpoints_dock->toggleViewAction()->setIcon( QIcon( ":/images/breakpoints.png" ) );
     windowMenu->addAction( ocamlbreakpoints_dock->toggleViewAction() );
+    debugWindowToolBar->addAction( ocamlbreakpoints_dock->toggleViewAction() );
 
 
     ocamlstack_dock = new QDockWidget( tr( "Stack" ), this );
@@ -700,6 +702,8 @@ void MainWindow::createToolBars()
     debugToolBar->addAction( debugInterruptAct );
     debugToolBar->addAction( debugDownAct );
     debugToolBar->addAction( debugUpAct );
+
+    debugWindowToolBar = addToolBar( tr( "Debug Windows" ) );
 }
 
 void MainWindow::createStatusBar()
