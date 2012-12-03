@@ -519,6 +519,7 @@ void MainWindow::createActions()
 
     createWatchWindowAct = new QAction( QIcon( ), tr( "&Create Watch Window..." ), this );
     createWatchWindowAct->setShortcut( QKeySequence("Ctrl+W") );
+    createWatchWindowAct->setIcon( QIcon(":/images/watch.png") );
     createWatchWindowAct->setStatusTip( tr( "Create a variable watch window" ) );
     connect( createWatchWindowAct, SIGNAL( triggered() ), this, SLOT( createWatchWindow() ) );
 
@@ -710,6 +711,7 @@ void MainWindow::createToolBars()
     debugToolBar->addAction( debugUpAct );
 
     debugWindowToolBar = addToolBar( tr( "Debug Windows" ) );
+    debugWindowToolBar->addAction( createWatchWindowAct );
 }
 
 void MainWindow::createStatusBar()
