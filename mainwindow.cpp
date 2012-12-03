@@ -396,7 +396,11 @@ void MainWindow::about()
 {
     QMessageBox::about( this, tr( "About OQamlDebug" ),
                         tr( "<b>OQamlDebug</b> graphical frontend for OCamlDebug<BR>"
-                            "License: <a href=\"http://www.gnu.org/licenses/gpl-3.0.en.html\">GPLv3</a> &copy;&nbsp;<a href=\"mailto:sebastien.fricker@gmail.com\">S&eacute;bastien Fricker</a>"
+                            "<TABLE border=\"0\"><TR>"
+                            "<TH>Homepage:</TH>"  "<TD><a href=\"https://forge.ocamlcore.org/projects/oqamldebug/\">https://forge.ocamlcore.org/projects/oqamldebug/</a></TD>"
+                            "</TR><TR>"
+                            "<TH>License:</TH>"   "<TD><a href=\"http://www.gnu.org/licenses/gpl-3.0.en.html\">GPLv3</a> &copy;&nbsp;<a href=\"mailto:sebastien.fricker@gmail.com\">S&eacute;bastien Fricker</a></TD>"
+                            "</TR></TABLE>"
                             ));
                             
 }
