@@ -7,8 +7,6 @@ let rec fact n =
     | n -> n * ( fact ( n - 1 ) ) 
 
 let _ = 
-  for n = 0 to 10 
-  do
+  let n = 5 in
     printf "fact(%i) = %i\n" n (fact n)
-  done
 ;;

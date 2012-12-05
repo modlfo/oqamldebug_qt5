@@ -10,6 +10,7 @@
 #include "filesystemwatcher.h"
 #include "breakpoint.h"
 #include "debuggercommand.h"
+#include "arguments.h"
 
 class OCamlDebugTime;
 class OCamlRun;
@@ -19,10 +20,10 @@ class OCamlDebug : public QPlainTextEdit
     Q_OBJECT
 
 public:
-    OCamlDebug( QWidget *parent_p , OCamlRun *ocamlrun, const QString &ocamldebug, const QStringList &ocamldebug_args, const QString & app, const QStringList &app_arguments );
+    OCamlDebug( QWidget *parent_p , OCamlRun *ocamlrun, const QString &ocamldebug, const Arguments &arguments );
     virtual ~OCamlDebug( );
-    void setApplication(const QString &application, const QStringList &arguments );
-    void setOCamlDebug(const QString &, const QStringList &ocamldebug_args);
+    void setArguments(const Arguments &arguments );
+    void setOCamlDebug(const QString &);
     int debugTimeAreaWidth();
     void debugTimeAreaPaintEvent( QPaintEvent *event );
     const QMap<int,int> & timeInfo() const { return _time_info; }
@@ -60,7 +61,7 @@ private:
     void contextMenuEvent(QContextMenuEvent *event);
     void wheelEvent ( QWheelEvent * event );
     void saveLRU(const QString &command);
-    void startProcess( const QString &ocamldebug, const QStringList &ocamldebug_args, const QString &program , const QStringList &arguments );
+    void startProcess( );
     void clear();
     void readChannel();
     void appendText(const QByteArray &);
@@ -78,9 +79,7 @@ private:
     QRegExp ocamlrunConnectionRx ;
     QList<QRegExp> _debuggerOutputsRx;
     QString _ocamldebug;
-    QString _ocamlapp;
-    QStringList _app_arguments;
-    QStringList _ocamldebug_arguments;
+    Arguments _arguments;
     QString _command_line,_command_line_last,_command_line_backup;
     QMap<int,int> _time_info;
     int _time;

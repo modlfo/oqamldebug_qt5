@@ -48,7 +48,6 @@ private slots:
     void debugNext();
     void debugPrevious();
     void setOCamlDebug();
-    void setOCamlRun();
     void setWorkingDirectory();
     void setOCamlDebugArgs();
     void about();
@@ -97,7 +96,6 @@ private:
     QAction *openAct;
     QAction *createWatchWindowAct;
     QAction *setOcamlDebugAct;
-    QAction *setOcamlRunAct;
     QAction *setWorkingDirectoryAct;
     QAction *setOcamlDebugArgsAct;
     QAction *exitAct;
@@ -114,7 +112,6 @@ private:
     QAction *aboutQtAct;
     QStringList _arguments;
     QString _ocamldebug;
-    QString _ocamlrun;
 
     QAction *debuggerStartAct;
     QAction *debugUpAct;

@@ -9,16 +9,16 @@
 #include "filesystemwatcher.h"
 #include "breakpoint.h"
 #include "debuggercommand.h"
+#include "arguments.h"
 
 class OCamlRun : public QPlainTextEdit
 {
     Q_OBJECT
 
 public:
-    OCamlRun( QWidget * parent_p, const QString &ocamlrun, const QString&app, const QStringList &);
+    OCamlRun( QWidget * parent_p, const Arguments & arguments);
     virtual ~OCamlRun( );
-    void setApplication(const QString &app, const QStringList &);
-    void setOCamlRun(const QString &);
+    void setArguments(const Arguments &arguments);
     void startApplication(int port);
 
 protected:
@@ -35,16 +35,14 @@ private slots:
     void receiveDataFromProcessStdError();
 
 private:
-    void startProcess( int port, const QString &program , const QStringList &arguments );
+    void startProcess( int port );
     void clear();
     void terminate();
     void readChannel();
     void appendText(const QByteArray &);
     QProcess *process_p;
     QTextStream _outstream;
-    QString _ocamlrun;
-    QString _ocamlapp;
-    QStringList _arguments;
+    Arguments _arguments;
     int _cursor_position;
 };
 

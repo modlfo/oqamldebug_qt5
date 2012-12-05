@@ -13,7 +13,7 @@ class Arguments
 
     private:
         void calcArguments();
-        const QStringList _arguments;
+        QStringList _arguments;
         QStringList _app_arguments,_ocamldebug_arguments;
         QString _ocamlapp;
 };

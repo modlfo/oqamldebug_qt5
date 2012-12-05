@@ -12,7 +12,9 @@ void Arguments::calcArguments()
     _ocamldebug_arguments.clear();
     _app_arguments.clear();
 
-    bool executable_found = false;
+    _ocamldebug_arguments << "-emacs" ;
+
+    bool executable_found             = false;
     foreach ( QString a , _arguments )
     {
         QFileInfo arg_info(a);
@@ -31,3 +33,4 @@ void Arguments::calcArguments()
             _ocamldebug_arguments << a ;
     }
 }
+

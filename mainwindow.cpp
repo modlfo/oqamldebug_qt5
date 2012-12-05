@@ -55,16 +55,6 @@ MainWindow::MainWindow(const QStringList &arguments)
            exit(0);
         setOCamlDebug();
     }
-    _ocamlrun = Options::get_opt_str("OCAMLRUN" , QString() );
-    while (_ocamlrun.isEmpty())
-    {
-        if (QMessageBox::warning(this, tr("ocamlrun location"),
-                tr("It is the first time that you start OQamlRun, please enter the path to ocamlrun executable."),
-                QMessageBox::Ok, QMessageBox::Abort )
-            != QMessageBox::Ok)
-           exit(0);
-        setOCamlRun();
-    }
     createActions();
     createMenus();
     createToolBars();
@@ -83,7 +73,7 @@ void MainWindow::createDockWindows()
     Arguments args( _arguments );
     ocamlrun_dock = new QDockWidget( tr( "Application Output" ), this );
     ocamlrun_dock->setAllowedAreas( Qt::TopDockWidgetArea | Qt::BottomDockWidgetArea | Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea );
-    ocamlrun = new OCamlRun( ocamlrun_dock, _ocamlrun , args.ocamlApp(), args.ocamlAppArguments() );
+    ocamlrun = new OCamlRun( ocamlrun_dock, args );
     ocamlrun_dock->setObjectName("OCamlRun");
     ocamlrun_dock->setWidget( ocamlrun );
     addDockWidget( Qt::BottomDockWidgetArea, ocamlrun_dock );
@@ -93,7 +83,7 @@ void MainWindow::createDockWindows()
 
     ocamldebug_dock = new QDockWidget( tr( "OCamlDebug" ), this );
     ocamldebug_dock->setAllowedAreas( Qt::TopDockWidgetArea | Qt::BottomDockWidgetArea | Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea );
-    ocamldebug = new OCamlDebug( ocamldebug_dock , ocamlrun, _ocamldebug, args.ocamlDebugArguments(), args.ocamlApp(), args.ocamlAppArguments() );
+    ocamldebug = new OCamlDebug( ocamldebug_dock , ocamlrun, _ocamldebug, args );
     ocamldebug_dock->setObjectName("OCamlDebugDock");
     connect ( ocamldebug , SIGNAL( stopDebugging( const QString &, int , int , bool) ) , this ,SLOT( stopDebugging( const QString &, int , int , bool) ) );
     connect ( ocamldebug , SIGNAL( debuggerStarted( bool) ) , this ,SLOT( debuggerStarted( bool) ) );
@@ -298,8 +288,8 @@ void MainWindow::setOCamlDebugArgs()
         if (ocamldebug)
         {
             Arguments args( _arguments );
-            ocamldebug->setApplication( args.ocamlApp(), args.ocamlAppArguments() );
-            ocamldebug->setOCamlDebug( _ocamldebug, args.ocamlDebugArguments() );
+            ocamldebug->setArguments( args );
+            ocamldebug->setOCamlDebug( _ocamldebug );
         }
     }
 }
@@ -314,31 +304,6 @@ void MainWindow::setWorkingDirectory()
     {
         Options::set_opt("WORKING_DIRECTORY", working_directory);
         QDir::setCurrent( Options::get_opt_str("WORKING_DIRECTORY") );
-    }
-}
-
-void MainWindow::setOCamlRun()
-{
-    QFileInfo ocamlrun_exx_info ( Options::get_opt_str("OCAMLRUN") );
-    QString ocamlrun_exx = QFileDialog::getOpenFileName(this, 
-            tr("OCamlRun Executable"),
-            ocamlrun_exx_info.absolutePath(),
-#if defined(Q_OS_UNIX)
-            "OCamlRun (ocamlrun)"
-#else
-            "OCamlRun (ocamlrun.exe)"
-#endif
-#if defined(Q_OS_MAC)
-            ,NULL,
-            QFileDialog::DontUseNativeDialog
-#endif
-            );
-    if (!ocamlrun_exx.isEmpty())
-    {
-        _ocamlrun=ocamlrun_exx;
-        Options::set_opt("OCAMLRUN", _ocamlrun);
-        if (ocamlrun)
-            ocamlrun->setOCamlRun( _ocamlrun );
     }
 }
 
@@ -365,7 +330,7 @@ void MainWindow::setOCamlDebug()
         if (ocamldebug)
         {
             Arguments args( _arguments );
-            ocamldebug->setOCamlDebug( _ocamldebug, args.ocamlDebugArguments() );
+            ocamldebug->setOCamlDebug( _ocamldebug );
         }
     }
 }
@@ -513,10 +478,6 @@ void MainWindow::createActions()
     setOcamlDebugAct->setStatusTip( tr( "Set OCamlDebug executable" ) );
     connect( setOcamlDebugAct, SIGNAL( triggered() ), this, SLOT( setOCamlDebug() ) );
 
-    setOcamlRunAct = new QAction(  tr( "&Set OCamlRun Executable..." ), this );
-    setOcamlRunAct->setStatusTip( tr( "Set OCamlRun executable" ) );
-    connect( setOcamlRunAct, SIGNAL( triggered() ), this, SLOT( setOCamlRun() ) );
-
     setOcamlDebugArgsAct = new QAction(  tr( "&Command Line Arguments..." ), this );
     setOcamlDebugArgsAct->setStatusTip( tr( "Set OCamlDebug command line arguments" ) );
     connect( setOcamlDebugArgsAct, SIGNAL( triggered() ), this, SLOT( setOCamlDebugArgs() ) );
@@ -652,7 +613,6 @@ void MainWindow::createMenus()
 {
     mainMenu = menuBar()->addMenu( tr( "&Main" ) );
     mainMenu->addAction( setOcamlDebugAct );
-    mainMenu->addAction( setOcamlRunAct );
     mainMenu->addAction( setOcamlDebugArgsAct );
     mainMenu->addAction( setWorkingDirectoryAct );
     mainMenu->addAction( openAct );

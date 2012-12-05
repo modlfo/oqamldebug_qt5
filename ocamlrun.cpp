@@ -5,7 +5,8 @@
 #include "options.h"
 
 
-OCamlRun::OCamlRun( QWidget *parent_p , const QString &ocamlrun, const QString & app, const QStringList &arguments ) : QPlainTextEdit(parent_p)
+OCamlRun::OCamlRun( QWidget *parent_p , const Arguments & arguments ) : QPlainTextEdit(parent_p),
+    _arguments( arguments )
 {
     setEnabled( false );
     setReadOnly( false );
@@ -15,8 +16,7 @@ OCamlRun::OCamlRun( QWidget *parent_p , const QString &ocamlrun, const QString &
     QFont font("Monospace");
     font.setStyleHint(QFont::TypeWriter);
     setFont(font);
-    setApplication( app, arguments );
-    setOCamlRun( ocamlrun );
+    setArguments( _arguments );
 
     setCursorWidth(3);
 }
@@ -46,23 +46,15 @@ void OCamlRun::terminate()
     }
 }
 
-void OCamlRun::setOCamlRun( const QString &ocamlrun )
+void OCamlRun::setArguments( const Arguments & arguments )
 {
-    _ocamlrun = ocamlrun ;
-}
-
-void OCamlRun::setApplication( const QString &app, const QStringList &arguments )
-{
-    _ocamlapp = app;
     _arguments = arguments ;
 }
 
 void OCamlRun::startApplication( int port )
 {
-    QStringList args ;
-    args << _ocamlapp << _arguments ;
     terminate();
-    startProcess ( port, _ocamlrun , args);
+    startProcess ( port );
 }
 
 void OCamlRun::closeEvent(QCloseEvent *event)
@@ -101,7 +93,7 @@ void OCamlRun::keyReleaseEvent ( QKeyEvent * e )
     QPlainTextEdit::keyReleaseEvent ( e );
 }
 
-void OCamlRun::startProcess( int port, const QString &program , const QStringList &arguments )
+void OCamlRun::startProcess( int port )
 {
     clear();
     process_p =  new QProcess(this) ;
@@ -111,11 +103,11 @@ void OCamlRun::startProcess( int port, const QString &program , const QStringLis
     QStringList env = QProcess::systemEnvironment();
     env << "CAML_DEBUG_SOCKET=localhost:" + QString::number( port ) ;
     process_p->setEnvironment(env);
-    process_p->start( program , arguments );
+    process_p->start( _arguments.ocamlApp() , _arguments.ocamlAppArguments() );
     _outstream.setDevice( process_p );
     if ( ! process_p->waitForStarted())
     {
-        QMessageBox::warning( this , tr( "Error Executing Command" ) , program );
+        QMessageBox::warning( this , tr( "Error Executing Command" ) , _arguments.ocamlApp() );
         clear();
         return;
     }
