@@ -25,7 +25,7 @@ class MainWindow : public QMainWindow
     Q_OBJECT
 
 public:
-    MainWindow(const QStringList &);
+    MainWindow(const Arguments &);
     QMdiSubWindow* openOCamlSource(const QString &fileName, bool from_user_loaded);
 
 protected:
@@ -110,7 +110,7 @@ private:
     QAction *aboutAct;
     QAction *helpAct;
     QAction *aboutQtAct;
-    QStringList _arguments;
+    Arguments _arguments;
     QString _ocamldebug;
 
     QAction *debuggerStartAct;

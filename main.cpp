@@ -48,8 +48,8 @@ int main( int argc, char *argv[] )
     QStringList arguments;
     for (int i=1; i< argc ; i++)
         arguments << argv[i];
-
-    MainWindow mainWin(arguments);
+    Arguments args( arguments );
+    MainWindow mainWin( args );
     mainWin.show();
     int ret = app.exec();
 

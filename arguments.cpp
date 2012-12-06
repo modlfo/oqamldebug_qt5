@@ -6,6 +6,12 @@ Arguments::Arguments( const QStringList &a ) : _arguments( a )
     calcArguments();
 }
 
+Arguments::Arguments( const QString &a ) 
+{
+    _arguments = a.split(" ", QString::SkipEmptyParts);
+    calcArguments();
+}
+
 void Arguments::calcArguments()
 {
     _ocamlapp.clear();
@@ -34,3 +40,7 @@ void Arguments::calcArguments()
     }
 }
 
+QString Arguments::toString() const
+{
+    return all().join( " " );
+}

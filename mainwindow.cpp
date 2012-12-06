@@ -10,7 +10,7 @@
 #include "ocamlwatch.h"
 #include <QFileInfo>
 
-MainWindow::MainWindow(const QStringList &arguments)
+MainWindow::MainWindow(const Arguments &arguments) : _arguments( arguments )
 {
     ocamldebug = NULL;
     ocamldebug_dock  = NULL;
@@ -32,7 +32,7 @@ MainWindow::MainWindow(const QStringList &arguments)
     else
     {
         Options::set_opt("WORKING_DIRECTORY",QDir::currentPath() ) ;
-        Options::set_opt("ARGUMENTS",_arguments);
+        Options::set_opt( "ARGUMENTS", _arguments.all() );
     }
 
     mdiArea = new QMdiArea;
@@ -275,16 +275,16 @@ QMdiSubWindow* MainWindow::openOCamlSource(const QString &fileName, bool from_us
 void MainWindow::setOCamlDebugArgs()
 {
     bool ok;
-    QStringList arguments = _arguments;
+    Arguments arguments = _arguments;
     if (arguments.isEmpty())
-        arguments = Options::get_opt_strlst("ARGUMENTS");
+        arguments = Arguments( Options::get_opt_strlst("ARGUMENTS") );
     QString text = QInputDialog::getText(this, tr("OCamlDebug Command Line Arguments"),
             tr("Arguments:"), QLineEdit::Normal,
-            arguments.join(" "), &ok);
+            arguments.toString(), &ok);
     if (ok && !text.isEmpty())
     {
-        _arguments = text.split(" ", QString::SkipEmptyParts);
-        Options::set_opt("ARGUMENTS",_arguments);
+        _arguments = Arguments( text );
+        Options::set_opt("ARGUMENTS",_arguments.all());
         if (ocamldebug)
         {
             Arguments args( _arguments );
