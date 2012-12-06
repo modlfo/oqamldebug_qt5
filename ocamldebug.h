@@ -94,7 +94,9 @@ private:
     QList<int> _breakpoint_hits;
     QStringList generateBreakpointCommands() const;
     OCamlRun *_ocamlrun_p;
-    int _port;
+    const int _port_min, _port_max;
+    int _current_port;
+    int findFreeServerPort( int ) const;
 };
 
 class OCamlDebugTime : public QWidget

@@ -1,10 +1,6 @@
 #!/bin/bash
 ocamlc -o testme -g test.ml || exit
 #./testme
-make || exit
-if [ -e oqamldebug ]
-then
-    ./oqamldebug testme
-else
-    $PWD/oqamldebug.app/Contents/MacOS/oqamldebug $PWD/testme
-fi
+qmake CONFIG+=debug CONFIG-=release CONFIG-=app_bundle
+make -j4 || exit
+./oqamldebug testme

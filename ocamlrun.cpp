@@ -101,7 +101,7 @@ void OCamlRun::startProcess( int port )
     connect ( process_p , SIGNAL( readyReadStandardOutput() ) , this , SLOT( receiveDataFromProcessStdOutput()) );
     connect ( process_p , SIGNAL( readyReadStandardError() ) , this , SLOT( receiveDataFromProcessStdError()) );
     QStringList env = QProcess::systemEnvironment();
-    env << "CAML_DEBUG_SOCKET=localhost:" + QString::number( port ) ;
+    env << "CAML_DEBUG_SOCKET=127.0.0.1:" + QString::number( port ) ;
     process_p->setEnvironment(env);
     process_p->start( _arguments.ocamlApp() , _arguments.ocamlAppArguments() );
     _outstream.setDevice( process_p );

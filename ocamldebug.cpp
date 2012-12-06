@@ -1,5 +1,6 @@
 #include <QtGui>
 #include <QtDebug>
+#include <QTcpServer>
 #include "ocamldebughighlighter.h"
 #include "ocamldebug.h"
 #include "ocamlrun.h"
@@ -19,12 +20,13 @@ OCamlDebug::OCamlDebug( QWidget *parent_p , OCamlRun *ocamlrun_p, const QString 
     newBreakpointRx("^Breakpoint ([0-9]+) at [0-9]+ : file ([^,]*), line ([0-9]+), characters ([0-9]+)-([0-9]+).*$"),
     emacsHaltInfoRx("^\\x001A\\x001AH.*$"),
     timeInfoRx("^Time : ([0-9]+)( - pc : ([0-9]+) - .*)?\\n?$"),
-    ocamlrunConnectionRx("^Waiting for connection\\.\\.\\.\\(the socket is localhost:[0-9]+\\)\\n?$"),
+    ocamlrunConnectionRx("^Waiting for connection\\.\\.\\.\\(the socket is [a-z.0-9_A-Z]*:[0-9]+\\)\\n?$"),
     _arguments( arguments ),
     _ocamlrun_p( ocamlrun_p ),
-    _port( 8044 )
+    _port_min( 8900 ),
+    _port_max( 8999 )
 {
-    
+    _current_port = _port_min ;
     _debuggerOutputsRx.append( QRegExp( "^No such frame\\.\\n?$" ) );
     _debuggerOutputsRx.append( QRegExp( "^#([0-9]+)  *Pc : [0-9]+ .*$" ) );
     _debuggerOutputsRx.append( QRegExp( "^Loading program\\.\\.\\.[\\n ]+$" ) );
@@ -302,6 +304,13 @@ void OCamlDebug::keyReleaseEvent ( QKeyEvent * e )
 void OCamlDebug::startProcess()
 {
     clear();
+    _current_port = findFreeServerPort( _current_port );
+    if ( _current_port == 0 )
+    {
+        QMessageBox::warning(this, tr("OCamlDebug server"),
+                tr("No free TCP port found between %1 and %2.").arg( _port_min ).arg( _port_max ),
+                QMessageBox::Ok );
+    }
     _time_info.clear();
     _time = -1 ;
     _command_queue.clear();
@@ -314,7 +323,6 @@ void OCamlDebug::startProcess()
         << _arguments.ocamlAppArguments() 
         ;
 
-    qDebug() << program << args ;
     process_p =  new QProcess(this) ;
     process_p->setProcessChannelMode(QProcess::MergedChannels);
     connect ( process_p , SIGNAL( readyReadStandardOutput() ) , this , SLOT( receiveDataFromProcessStdOutput()) );
@@ -329,7 +337,7 @@ void OCamlDebug::startProcess()
 
     _ocamlrun_p->setArguments( _arguments );
     debugger( DebuggerCommand( "set loadingmode manual", DebuggerCommand::HIDE_ALL_OUTPUT ) );
-    debugger( DebuggerCommand( "set socket localhost:"+QString::number(_port), DebuggerCommand::HIDE_DEBUGGER_OUTPUT ) );
+    debugger( DebuggerCommand( "set socket 127.0.0.1:"+QString::number( _current_port ), DebuggerCommand::HIDE_DEBUGGER_OUTPUT ) );
     debugger( DebuggerCommand( "goto 0", DebuggerCommand::HIDE_ALL_OUTPUT ) );
     restoreBreakpoints();
     emit debuggerStarted( true );
@@ -521,7 +529,7 @@ void OCamlDebug::appendText( const QByteArray &text )
     else if ( ocamlrunConnectionRx.exactMatch(data) )
     {
         debugger_command = true;
-        _ocamlrun_p->startApplication( _port );
+        _ocamlrun_p->startApplication( _current_port );
     }
     else if ( emacsHaltInfoRx.exactMatch(data) )
     {
@@ -827,6 +835,28 @@ void OCamlDebug::debugTimeAreaPaintEvent( QPaintEvent *event )
         bottom = top + ( int ) blockBoundingRect( block ).height();
         ++blockNumber;
     }
+}
+
+int OCamlDebug::findFreeServerPort( int port ) const
+{
+    int offset = 0;
+    int free_port = port + 1;
+    do
+    {
+        offset++;
+        QTcpServer tcp_server;
+        if ( tcp_server.listen( QHostAddress( "127.0.0.1" ), free_port ) )
+        {
+            tcp_server.close();
+            return free_port;
+        }
+        free_port = port + offset;
+        if ( free_port > _port_max )
+            free_port = _port_min ;
+    }
+    while ( port != free_port );
+
+    return 0;
 }
 
 OCamlDebugTime::OCamlDebugTime( OCamlDebug *d ) : QWidget( d )
