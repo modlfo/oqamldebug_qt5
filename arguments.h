@@ -12,7 +12,7 @@ class Arguments
         const QStringList & ocamlAppArguments() const { return _app_arguments ; }
         const QStringList & ocamlDebugArguments() const { return _ocamldebug_arguments ; }
 
-        const bool isEmpty() const { return _arguments.isEmpty(); }
+        bool isEmpty() const { return _arguments.isEmpty(); }
         const QStringList & all() const { return _arguments; }
         QString toString() const ;
     private:
