@@ -81,7 +81,7 @@ void OCamlRun::keyPressEvent ( QKeyEvent * e )
                      break;
              }
              _outstream.flush();
-             appendText( text.toAscii() );
+             appendText( text.toAscii(), Qt::blue );
          }
      }
      else
@@ -143,10 +143,13 @@ void OCamlRun::readChannel()
     appendText( raw );
 }
 
-void OCamlRun::appendText( const QByteArray &text )
+void OCamlRun::appendText( const QByteArray &text, const QColor &color )
 {
     QTextCursor cur = textCursor();
+    QTextCharFormat format;
+    format.setForeground( color );
     cur.movePosition(QTextCursor::End, QTextCursor::MoveAnchor) ;
+    cur.setCharFormat( format );
     cur.insertText(text);
     cur.movePosition(QTextCursor::End, QTextCursor::MoveAnchor );
     setTextCursor(cur);

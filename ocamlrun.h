@@ -39,7 +39,7 @@ private:
     void clear();
     void terminate();
     void readChannel();
-    void appendText(const QByteArray &);
+    void appendText(const QByteArray &, const QColor &color = Qt::black );
     QProcess *process_p;
     QTextStream _outstream;
     Arguments _arguments;
