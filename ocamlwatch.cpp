@@ -133,6 +133,25 @@ void OCamlWatch::updateWatches()
     }
 }
 
+bool OCamlWatch::displayDiff( const QString & str1, const QString & str2 ) const
+{
+    if ( str1 == str2 )
+        return false ;
+
+    QStringList patterns;
+    patterns 
+        << "^$"
+        << "^Unbound identifier .*"
+        ;
+    foreach (const QString &pattern, patterns) 
+    {
+        QRegExp patternRx( pattern );
+        if ( patternRx.exactMatch( str1 ) || patternRx.exactMatch( str2 ) )
+            return false;
+    }
+    return true;
+}
+
 void  OCamlWatch::debuggerCommand( const QString &cmd, const QString &result)
 {
     for (QList<Watch>::Iterator itWatch = _watches.begin() ; itWatch != _watches.end() ; ++itWatch )
@@ -168,10 +187,15 @@ void  OCamlWatch::debuggerCommand( const QString &cmd, const QString &result)
                 item_p->setTextAlignment( i, Qt::AlignLeft | Qt::ElideRight | Qt::AlignVCenter );
             }
             QString printed_value ;
-            if ( !value.isEmpty() && !itWatch->value_only.isEmpty() && modified )
+            if ( displayDiff( value, itWatch->value_only ) )
                 printed_value = htmlDiff( value, itWatch->value_only );
             else
-                printed_value = "<HTML><BODY>" + Qt::escape( value ) + "</BODY></HTML>";
+            {
+                if ( modified )
+                    printed_value = "<HTML><BODY><B>" + Qt::escape( value ) + "</B></BODY></HTML>";
+                else
+                    printed_value = "<HTML><BODY>" + Qt::escape( value ) + "</BODY></HTML>";
+            }
 
             QLabel *value_p = new QLabel( printed_value );
             value_p->setWordWrap(true) ;

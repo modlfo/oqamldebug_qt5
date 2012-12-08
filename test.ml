@@ -7,6 +7,6 @@ let rec fact n =
     | n -> n * ( fact ( n - 1 ) ) 
 
 let _ = 
-  let n = read_int () in
+  let n = 5 in
     printf "fact(%i) = %i\n" n (fact n)
 ;;

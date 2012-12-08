@@ -603,9 +603,9 @@ QString htmlDiff( const QString &cur, const QString &ref )
             case TextDiff::INSERTED:
                 {
                     QString text = cur.mid( pos, it->length() );
-                    ret += "<B></U><font color=\"blue\">"; 
+                    ret += "<span style=\"text-decoration: underline;\"><B><font color=\"blue\">"; 
                     ret += Qt::escape( text );
-                    ret += "</font></U></B>"; 
+                    ret += "</font></B></span>"; 
                     pos += it->length();
                 }
                 break;

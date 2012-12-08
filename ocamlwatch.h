@@ -45,6 +45,7 @@ protected:
     void closeEvent(QCloseEvent *event);
 
 private:
+    bool displayDiff( const QString & str1, const QString & str2 ) const;
     QList<Watch> _watches ;
     QString command (const Watch & ) const;
     void clearData();
