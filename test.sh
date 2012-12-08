@@ -3,4 +3,4 @@ ocamlc -o testme -g test.ml || exit
 #./testme
 qmake CONFIG+=debug CONFIG-=release CONFIG-=app_bundle
 make -j4 || exit
-./oqamldebug testme
+./oqamldebug testme 'a string with quotes(")'
