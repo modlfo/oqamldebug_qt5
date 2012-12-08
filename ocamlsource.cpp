@@ -475,7 +475,7 @@ void OCamlSource::contextMenuEvent( QContextMenuEvent *event )
         cur = current_cur;
 
     _breakpoint_line   = mouse_position.blockNumber() + 1;
-    _breakpoint_column = mouse_position.positionInBlock() + 1;
+    _breakpoint_column = mouse_position.position() - mouse_position.block().position() + 1;
     if ( ! cur.hasSelection() )
     {
         cur.select(QTextCursor::WordUnderCursor);
@@ -545,7 +545,7 @@ void OCamlSource::mousePressEvent ( QMouseEvent * e )
         cur = current_cur;
 
     _breakpoint_line   = cur.blockNumber() + 1;
-    _breakpoint_column = cur.positionInBlock() + 1;
+    _breakpoint_column = cur.position() - cur.block().position() + 1;
     if ( ! cur.hasSelection() )
     {
         cur.select(QTextCursor::WordUnderCursor);
