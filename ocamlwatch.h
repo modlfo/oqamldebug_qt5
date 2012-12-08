@@ -19,7 +19,8 @@ private:
         struct Watch
         {
             QString variable;
-            QString value;
+            QString all_output;
+            QString value_only;
             bool display;
             bool uptodate;
         };

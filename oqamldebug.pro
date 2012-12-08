@@ -4,6 +4,7 @@ VERSION=0.0.0
 
 HEADERS       = mainwindow.h \
                 arguments.h \
+                textdiff.h \
                 ocamlsourcehighlighter.h \
                 ocamldebughighlighter.h \
                 ocamldebug.h \
@@ -19,6 +20,7 @@ HEADERS       = mainwindow.h \
                 ocamlsource.h
 SOURCES       = main.cpp \
                 arguments.cpp \
+                textdiff.cpp \
                 ocamlrun.cpp \
                 ocamlbreakpoint.cpp \
                 ocamlstack.cpp \

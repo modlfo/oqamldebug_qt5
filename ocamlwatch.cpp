@@ -3,6 +3,7 @@
 #include <QTreeWidgetItem>
 #include <QStringListModel>
 #include "ocamlwatch.h"
+#include "textdiff.h"
 #include "options.h"
 
 
@@ -40,9 +41,6 @@ OCamlWatch::OCamlWatch( QWidget *parent_p, int i ) :
     clearData();
 
     setAttribute(Qt::WA_DeleteOnClose);
-    QFont font("Monospace");
-    font.setStyleHint(QFont::TypeWriter);
-    setFont(font);
 
     restoreWatches();
 }
@@ -144,12 +142,12 @@ void  OCamlWatch::debuggerCommand( const QString &cmd, const QString &result)
             itWatch->uptodate = true;
             QString value  = result.trimmed() ;
             bool modified = false;
-            if ( !itWatch->value.isEmpty() )
-                modified = value != itWatch->value ;
-            itWatch->value = value ;
+            if ( !itWatch->all_output.isEmpty() )
+                modified = value != itWatch->all_output ;
+            itWatch->all_output = value ;
             QStringList item ;
             QString type;
-            if ( variableRx.exactMatch( itWatch->value ) )
+            if ( variableRx.exactMatch( itWatch->all_output ) )
             {
                 type = variableRx.cap(1).trimmed();
                 value = variableRx.cap(2).trimmed();
@@ -161,16 +159,23 @@ void  OCamlWatch::debuggerCommand( const QString &cmd, const QString &result)
             f.setBold( modified );
             for ( int i=1 ; i<3 ; i++ )
             {
-                item_p->setFont( i, f );
+                if ( i!=3 )
+                    item_p->setFont( i, f );
                 if ( itWatch->display )
                     item_p->setToolTip( i, tr( "Click to print all sub-values of '%0'." ).arg( itWatch->variable ) );
                 else
                     item_p->setToolTip( i, tr( "Click to hide all sub-values of '%0'." ).arg( itWatch->variable ) );
                 item_p->setTextAlignment( i, Qt::AlignLeft | Qt::ElideRight | Qt::AlignVCenter );
             }
-            QLabel *value_p = new QLabel( value );
+            QString printed_value ;
+            if ( !value.isEmpty() && !itWatch->value_only.isEmpty() && modified )
+                printed_value = htmlDiff( value, itWatch->value_only );
+            else
+                printed_value = "<HTML><BODY>" + Qt::escape( value ) + "</BODY></HTML>";
+
+            QLabel *value_p = new QLabel( printed_value );
             value_p->setWordWrap(true) ;
-            value_p->setFont( f );
+                
             int width = variables_p->header()->sectionSize( 3 ) ;
             item_p->setSizeHint( 3, QSize( width, value_p->heightForWidth( width )) );
             QIcon delete_icon = QIcon( ":/images/delete.png" );
@@ -183,6 +188,7 @@ void  OCamlWatch::debuggerCommand( const QString &cmd, const QString &result)
 
             variables_p->addTopLevelItem( item_p );
             variables_p->setItemWidget( item_p, 3, value_p );
+            itWatch->value_only = value ;
         }
     }
 }
