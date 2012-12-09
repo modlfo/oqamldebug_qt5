@@ -23,10 +23,11 @@ OCamlDebug::OCamlDebug( QWidget *parent_p , OCamlRun *ocamlrun_p, const QString 
     ocamlrunConnectionRx("^Waiting for connection\\.\\.\\.\\(the socket is [a-z.0-9_A-Z]*:[0-9]+\\)\\n?$"),
     _arguments( arguments ),
     _ocamlrun_p( ocamlrun_p ),
-    _port_min( 8900 ),
-    _port_max( 8999 )
+    _port_min( 18000 ),
+    _port_max( 18999 )
 {
-    _current_port = _port_min ;
+    _current_port = Options::get_opt_int( "OCAMLDEBUG_PORT", _port_min ) ;
+    qDebug() << _current_port;
     _debuggerOutputsRx.append( QRegExp( "^No such frame\\.\\n?$" ) );
     _debuggerOutputsRx.append( QRegExp( "^#([0-9]+)  *Pc : [0-9]+ .*$" ) );
     _debuggerOutputsRx.append( QRegExp( "^Loading program\\.\\.\\.[\\n ]+$" ) );
@@ -312,6 +313,8 @@ void OCamlDebug::startProcess()
                 tr("No free TCP port found between %1 and %2.").arg( _port_min ).arg( _port_max ),
                 QMessageBox::Ok );
     }
+    else
+        Options::set_opt( "OCAMLDEBUG_PORT", _current_port );
     _time_info.clear();
     _time = -1 ;
     _command_queue.clear();
@@ -841,17 +844,17 @@ void OCamlDebug::debugTimeAreaPaintEvent( QPaintEvent *event )
 int OCamlDebug::findFreeServerPort( int port ) const
 {
     int offset = 0;
-    int free_port = port + 1;
+    int free_port;
     do
     {
         offset++;
+        free_port = port + offset;
         QTcpServer tcp_server;
         if ( tcp_server.listen( QHostAddress( "127.0.0.1" ), free_port ) )
         {
             tcp_server.close();
             return free_port;
         }
-        free_port = port + offset;
         if ( free_port > _port_max )
             free_port = _port_min ;
     }
