@@ -1,6 +1,6 @@
 #CONFIG -= app_bundle
 QT += network
-VERSION=0.0.0
+VERSION=0.9.0
 
 HEADERS       = mainwindow.h \
                 arguments.h \
