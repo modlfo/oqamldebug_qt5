@@ -35,6 +35,8 @@ SOURCES       = main.cpp \
 RESOURCES     = oqamldebug.qrc
 FORMS         =
 
+DEFINES += VERSION=\\\"$$VERSION\\\"
+
 ICON=images/oqamldebug.icns
 
 # install
