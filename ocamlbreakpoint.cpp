@@ -26,9 +26,6 @@ OCamlBreakpoint::OCamlBreakpoint( QWidget *parent_p ) :
     clearData();
 
     setAttribute(Qt::WA_DeleteOnClose);
-    QFont font("Monospace");
-    font.setStyleHint(QFont::TypeWriter);
-    setFont(font);
 }
 
 OCamlBreakpoint::~OCamlBreakpoint()

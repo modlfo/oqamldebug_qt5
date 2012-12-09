@@ -28,9 +28,6 @@ OCamlStack::OCamlStack( QWidget *parent_p ) :
     clearData();
 
     setAttribute(Qt::WA_DeleteOnClose);
-    QFont font("Monospace");
-    font.setStyleHint(QFont::TypeWriter);
-    setFont(font);
 }
 
 OCamlStack::~OCamlStack()
