@@ -71,6 +71,7 @@ void OCamlDebug::clear()
     if ( process_p )
     {
         emit debuggerStarted( false );
+        disconnect() ;
         process_p->terminate();
         if (process_p->waitForFinished( 1000 ) )
             process_p->kill();
