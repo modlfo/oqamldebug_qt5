@@ -27,7 +27,6 @@ OCamlDebug::OCamlDebug( QWidget *parent_p , OCamlRun *ocamlrun_p, const QString 
     _port_max( 18999 )
 {
     _current_port = Options::get_opt_int( "OCAMLDEBUG_PORT", _port_min ) ;
-    qDebug() << _current_port;
     _debuggerOutputsRx.append( QRegExp( "^No such frame\\.\\n?$" ) );
     _debuggerOutputsRx.append( QRegExp( "^#([0-9]+)  *Pc : [0-9]+ .*$" ) );
     _debuggerOutputsRx.append( QRegExp( "^Loading program\\.\\.\\.[\\n ]+$" ) );
@@ -58,6 +57,8 @@ OCamlDebug::OCamlDebug( QWidget *parent_p , OCamlRun *ocamlrun_p, const QString 
 
 OCamlDebug::~OCamlDebug()
 {
+    emit debuggerStarted( false );
+    disconnect() ;
     clear();
     if ( file_watch_p )
         delete file_watch_p;
@@ -71,8 +72,6 @@ void OCamlDebug::clear()
     _lru_position = -1 ;
     if ( process_p )
     {
-        emit debuggerStarted( false );
-        disconnect() ;
         process_p->terminate();
         if (process_p->waitForFinished( 1000 ) )
             process_p->kill();
