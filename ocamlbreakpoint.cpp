@@ -69,7 +69,7 @@ void  OCamlBreakpoint::updateBreakpoints()
         bool hit = _breakpoint_hit.contains( itBreakpoint->id );
         if ( hit )
             for ( int i=1 ; i<5 ; i++ )
-                item_p->setBackgroundColor( i, QColor( Qt::red ) );
+                item_p->setBackgroundColor( i, QColor( Qt::yellow ) );
         item_p->setFlags( Qt::ItemIsEnabled );
         QIcon delete_icon = QIcon( ":/images/delete.png" );
         item_p->setIcon( 0, delete_icon );
