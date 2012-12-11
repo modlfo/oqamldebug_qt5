@@ -621,7 +621,7 @@ void OCamlDebug::debuggerInterrupt()
 {
 #if defined (Q_OS_WIN32)
     QMessageBox::information (this, tr("Information"), 
-            tr("Ctrl-C is not supported on Windows.") )
+            tr("Ctrl-C is not supported on Windows.") );
 #else
     int pid = process_p->pid();
     ::kill( pid , SIGINT );
