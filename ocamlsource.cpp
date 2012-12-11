@@ -534,6 +534,7 @@ void OCamlSource::contextMenuEvent( QContextMenuEvent *event )
         delete printAct;
     if (watchAct)
         delete watchAct;
+    delete menu;
 }
 
 

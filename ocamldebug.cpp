@@ -31,6 +31,7 @@ OCamlDebug::OCamlDebug( QWidget *parent_p , OCamlRun *ocamlrun_p, const QString 
     _debuggerOutputsRx.append( QRegExp( "^#([0-9]+)  *Pc : [0-9]+ .*$" ) );
     _debuggerOutputsRx.append( QRegExp( "^Loading program\\.\\.\\.[\\n ]+$" ) );
     _debuggerOutputsRx.append( QRegExp( "^done\\.[\\n ]+$" ) );
+    _display_all_commands = Options::get_opt_bool( "DISPLAY_ALL_OCAMLDEBUG_COMMANDS", false );
 
     file_watch_p = NULL;
     debugTimeArea = new OCamlDebugTime( this );
@@ -428,6 +429,8 @@ void OCamlDebug::appendText( const QByteArray &text )
     DebuggerCommand::Option command_option = DebuggerCommand::SHOW_ALL_OUTPUT ;
     if ( !_command_queue.isEmpty() )
         command_option = _command_queue.first().option();
+	if ( _display_all_commands )
+		command_option = DebuggerCommand::SHOW_ALL_OUTPUT ;
     QString data = QString::fromAscii( text );
     bool command_completed = readyRx.indexIn( data ) >= 0;
     if ( command_completed )
@@ -738,7 +741,14 @@ void OCamlDebug::wheelEvent ( QWheelEvent * event )
 void OCamlDebug::contextMenuEvent(QContextMenuEvent *event)
 {
     QMenu *menu = createStandardContextMenu();
+    QAction *displayCommandAct = new QAction( tr( "&Display all commands" ) , this );
+    displayCommandAct->setCheckable( true );
+    displayCommandAct->setChecked( _display_all_commands );
+    connect( displayCommandAct, SIGNAL( triggered(bool) ), this, SLOT( displayAllCommands(bool) ) );
+    menu->addAction( displayCommandAct );
     menu->exec(event->globalPos());
+
+    delete displayCommandAct;
     delete menu;
 }
 
@@ -918,3 +928,8 @@ bool OCamlDebugTime::event(QEvent *event)
     return QWidget::event(event);
 }
 
+void OCamlDebug::displayAllCommands( bool b )
+{
+    _display_all_commands = b;
+    Options::set_opt( "DISPLAY_ALL_OCAMLDEBUG_COMMANDS", b );
+}

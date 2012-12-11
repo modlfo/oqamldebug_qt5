@@ -44,6 +44,7 @@ public slots:
     void updateDebugTimeArea(const QRect &, int);
 
 private slots:
+    void displayAllCommands(bool) ;
     void receiveDataFromProcessStdOutput();
     void receiveDataFromProcessStdError();
     void fileChanged ( );
@@ -97,6 +98,7 @@ private:
     const int _port_min, _port_max;
     int _current_port;
     int findFreeServerPort( int ) const;
+    bool _display_all_commands;
 };
 
 class OCamlDebugTime : public QWidget
