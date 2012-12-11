@@ -429,8 +429,6 @@ void OCamlDebug::appendText( const QByteArray &text )
     DebuggerCommand::Option command_option = DebuggerCommand::SHOW_ALL_OUTPUT ;
     if ( !_command_queue.isEmpty() )
         command_option = _command_queue.first().option();
-	if ( _display_all_commands )
-		command_option = DebuggerCommand::SHOW_ALL_OUTPUT ;
     QString data = QString::fromAscii( text );
     bool command_completed = readyRx.indexIn( data ) >= 0;
     if ( command_completed )
@@ -637,7 +635,14 @@ void OCamlDebug::debugger( const DebuggerCommand &command )
         _command_queue.clear();
 
     bool empty_queue = _command_queue.isEmpty() ;
-    _command_queue.append( command );
+    if ( _display_all_commands )
+    {
+        DebuggerCommand command_copy = command;
+        command_copy.setOption( DebuggerCommand::SHOW_ALL_OUTPUT );
+        _command_queue.append( command_copy );
+    }
+    else
+        _command_queue.append( command );
 
     if ( empty_queue )
         processOneQueuedCommand();
