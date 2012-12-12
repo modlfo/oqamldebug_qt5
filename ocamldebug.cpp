@@ -12,7 +12,7 @@
 
 
 OCamlDebug::OCamlDebug( QWidget *parent_p , OCamlRun *ocamlrun_p, const QString &ocamldebug, const Arguments &arguments ) : QPlainTextEdit(parent_p),
-    emacsLineInfoRx("^\\x001A\\x001AM([^:]*):([^:]*):([^:]*):([^:\\n]*)\\n*$") ,
+    emacsLineInfoRx("^\\x001A\\x001AM([^:].[^:]*):([^:]*):([^:]*):([^:\\n]*)\\n*$") ,
     readyRx("^\\(ocd\\) *") ,
     deleteBreakpointRx("^Removed breakpoint ([0-9]+) at [0-9]+ : .*$"),
     hitBreakpointRx("^Breakpoints? :( [0-9]+)+ ?\\n?$"),

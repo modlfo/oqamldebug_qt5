@@ -1,4 +1,4 @@
-ocamlc -o testme.exe -g test.ml || exit
+ocamlc -o testme.exe -g test.ml 
 
 qmake CONFIG+=debug CONFIG-=release CONFIG-=app_bundle
 nmake 
