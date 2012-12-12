@@ -429,7 +429,7 @@ void OCamlDebug::appendText( const QByteArray &text )
     DebuggerCommand::Option command_option = DebuggerCommand::SHOW_ALL_OUTPUT ;
     if ( !_command_queue.isEmpty() )
         command_option = _command_queue.first().option();
-    QString data = QString::fromAscii( text );
+    QString data = QString::fromAscii( text ).remove( '\r' );
     bool command_completed = readyRx.indexIn( data ) >= 0;
     if ( command_completed )
     {
