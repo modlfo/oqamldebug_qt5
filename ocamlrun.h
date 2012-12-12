@@ -23,6 +23,7 @@ public:
 
 protected:
     void closeEvent(QCloseEvent *event);
+    void contextMenuEvent(QContextMenuEvent *event);
 
     virtual void keyPressEvent ( QKeyEvent * e );
     virtual void keyReleaseEvent ( QKeyEvent * e );
@@ -33,6 +34,7 @@ public slots:
 private slots:
     void receiveDataFromProcessStdOutput();
     void receiveDataFromProcessStdError();
+    void setVerbose( bool );
 
 private:
     void startProcess( int port );
@@ -40,10 +42,15 @@ private:
     void terminate();
     void readChannel();
     void appendText(const QByteArray &, const QColor &color = Qt::black );
+    void appendText(const QString &s, const QColor &color = Qt::black )
+    {
+        appendText( s.toAscii(), color );
+    }
     QProcess *process_p;
     QTextStream _outstream;
     Arguments _arguments;
     int _cursor_position;
+    bool _verbose;
 };
 
 #endif

@@ -8,6 +8,7 @@
 OCamlRun::OCamlRun( QWidget *parent_p , const Arguments & arguments ) : QPlainTextEdit(parent_p),
     _arguments( arguments )
 {
+    _verbose = Options::get_opt_bool( "OCAMLRUN_VERBOSE", false );
     setEnabled( false );
     setReadOnly( false );
     setUndoRedoEnabled( false );
@@ -103,6 +104,9 @@ void OCamlRun::startProcess( int port )
     QStringList env = QProcess::systemEnvironment();
     env << "CAML_DEBUG_SOCKET=127.0.0.1:" + QString::number( port ) ;
     process_p->setEnvironment(env);
+
+    if ( _verbose )
+        appendText( tr( "Executing %1 %2 ...\n" ).arg( _arguments.ocamlApp() ).arg( _arguments.ocamlAppArguments().join( " " ) ), Qt::gray );
     process_p->start( _arguments.ocamlApp() , _arguments.ocamlAppArguments() );
     _outstream.setDevice( process_p );
     if ( ! process_p->waitForStarted())
@@ -167,3 +171,22 @@ void OCamlRun::debuggerStarted( bool b )
     }
 }
 
+void OCamlRun::contextMenuEvent(QContextMenuEvent *event)
+{
+    QMenu *menu = createStandardContextMenu();
+    QAction *verboseAct = new QAction( tr( "&Verbose" ) , this );
+    verboseAct->setCheckable( true );
+    verboseAct->setChecked( _verbose );
+    connect( verboseAct, SIGNAL( triggered(bool) ), this, SLOT( setVerbose(bool) ) );
+    menu->addAction( verboseAct );
+    menu->exec(event->globalPos());
+
+    delete verboseAct;
+    delete menu;
+}
+
+void OCamlRun::setVerbose( bool b )
+{
+    _verbose = b;
+    Options::set_opt( "OCAMLRUN_VERBOSE", b );
+}
