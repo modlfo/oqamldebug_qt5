@@ -20,7 +20,7 @@ MainWindow::MainWindow(const Arguments &arguments) : _arguments( arguments )
     ocamlstack  = NULL;
     ocamlrun_dock  = NULL;
     ocamlrun  = NULL;
-    setWindowIcon( QIcon( ":/images/oqamldebug.png " ) );
+    setWindowIcon( QIcon( ":/images/oqamldebug.png" ) );
     setDockNestingEnabled( true );
     help_p = NULL;
     _arguments = arguments;
