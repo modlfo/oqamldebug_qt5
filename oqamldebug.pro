@@ -1,6 +1,10 @@
-#CONFIG -= app_bundle
+CONFIG -= app_bundle
 QT += network
-VERSION=0.9.0
+VERSION=0.9.1
+
+isEmpty(PREFIX_BIN) {
+ PREFIX_BIN = bin
+}
 
 HEADERS       = mainwindow.h \
                 arguments.h \
@@ -48,7 +52,9 @@ DISTFILES += images/copy.png images/oqamldebug.png images/cut.png images/debug-b
                  images/open.png images/delete.png images/paste.png
 
 unix {
-    target.path = $$(PREFIX)/bin
+    target.target = $$PREFIX_BIN/$$TARGET
+    target.path = $$PREFIX_BIN
+    target.depends = $$TARGET
     INSTALLS += target
 
     tags.target = tags
