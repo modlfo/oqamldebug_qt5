@@ -46,6 +46,7 @@ MainWindow::MainWindow(const Arguments &arguments) : _arguments( arguments )
              this, SLOT( setActiveSubWindow( QWidget* ) ) );
 
     _ocamldebug = Options::get_opt_str("OCAMLDEBUG" , QString() );
+    _ocamldebug_init_script = Options::get_opt_str("OCAMLDEBUG_INIT_SCRIPT" , QString() );
     while (_ocamldebug.isEmpty())
     {
         if (QMessageBox::warning(this, tr("ocamldebug location"),
@@ -83,7 +84,7 @@ void MainWindow::createDockWindows()
 
     ocamldebug_dock = new QDockWidget( tr( "OCamlDebug" ), this );
     ocamldebug_dock->setAllowedAreas( Qt::TopDockWidgetArea | Qt::BottomDockWidgetArea | Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea );
-    ocamldebug = new OCamlDebug( ocamldebug_dock , ocamlrun, _ocamldebug, args );
+    ocamldebug = new OCamlDebug( ocamldebug_dock , ocamlrun, _ocamldebug, args, _ocamldebug_init_script );
     ocamldebug_dock->setObjectName("OCamlDebugDock");
     connect ( ocamldebug , SIGNAL( stopDebugging( const QString &, int , int , bool) ) , this ,SLOT( stopDebugging( const QString &, int , int , bool) ) );
     connect ( ocamldebug , SIGNAL( debuggerStarted( bool) ) , this ,SLOT( debuggerStarted( bool) ) );
@@ -290,6 +291,7 @@ void MainWindow::setOCamlDebugArgs()
             Arguments args( _arguments );
             ocamldebug->setArguments( args );
             ocamldebug->setOCamlDebug( _ocamldebug );
+            ocamldebug->setInitializationScript( _ocamldebug_init_script );
         }
     }
 }
@@ -305,6 +307,27 @@ void MainWindow::setWorkingDirectory()
         Options::set_opt("WORKING_DIRECTORY", working_directory);
         QDir::setCurrent( Options::get_opt_str("WORKING_DIRECTORY") );
     }
+}
+
+void MainWindow::setOCamlDebugInitScript()
+{
+    QFileInfo ocamldebug_exx_info ( Options::get_opt_str("OCAMLDEBUG_INIT_SCRIPT") );
+    _ocamldebug_init_script = QFileDialog::getOpenFileName(this, 
+            tr("OCamlDebug Executable"),
+            ocamldebug_exx_info.absolutePath(),
+#if defined(Q_OS_UNIX)
+            "OCamlDebug Initialization Script (*)"
+#else
+            "OCamlDebug Initialization Script (*.*)"
+#endif
+#if defined(Q_OS_MAC)
+            ,NULL,
+            QFileDialog::DontUseNativeDialog
+#endif
+            );
+    Options::set_opt("OCAMLDEBUG_INIT_SCRIPT", _ocamldebug_init_script);
+    if (ocamldebug)
+        ocamldebug->setInitializationScript( _ocamldebug_init_script );
 }
 
 void MainWindow::setOCamlDebug()
@@ -484,6 +507,10 @@ void MainWindow::createActions()
     setOcamlDebugArgsAct->setStatusTip( tr( "Set OCamlDebug command line arguments" ) );
     connect( setOcamlDebugArgsAct, SIGNAL( triggered() ), this, SLOT( setOCamlDebugArgs() ) );
 
+    setOcamlDebugInitScriptAct = new QAction(  tr( "&OCamlDebug Initialization Script..." ), this );
+    setOcamlDebugInitScriptAct->setStatusTip( tr( "Set an initialization script executed just after ocamldebug is initialized." ) );
+    connect( setOcamlDebugInitScriptAct, SIGNAL( triggered() ), this, SLOT( setOCamlDebugInitScript() ) );
+
     createWatchWindowAct = new QAction( QIcon( ), tr( "&Create Watch Window..." ), this );
     createWatchWindowAct->setShortcut( QKeySequence("Ctrl+W") );
     createWatchWindowAct->setIcon( QIcon(":/images/watch.png") );
@@ -616,6 +643,7 @@ void MainWindow::createMenus()
     mainMenu = menuBar()->addMenu( tr( "&Main" ) );
     mainMenu->addAction( setOcamlDebugAct );
     mainMenu->addAction( setOcamlDebugArgsAct );
+    mainMenu->addAction( setOcamlDebugInitScriptAct );
     mainMenu->addAction( setWorkingDirectoryAct );
     mainMenu->addAction( openAct );
     mainMenu->addSeparator();

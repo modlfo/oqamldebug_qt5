@@ -11,7 +11,7 @@
 #endif
 
 
-OCamlDebug::OCamlDebug( QWidget *parent_p , OCamlRun *ocamlrun_p, const QString &ocamldebug, const Arguments &arguments ) : QPlainTextEdit(parent_p),
+OCamlDebug::OCamlDebug( QWidget *parent_p , OCamlRun *ocamlrun_p, const QString &ocamldebug, const Arguments &arguments, const QString & init_script ) : QPlainTextEdit(parent_p),
     emacsLineInfoRx("^\\x001A\\x001AM([^:].[^:]*):([^:]*):([^:]*):([^:\\n]*)\\n*$") ,
     readyRx("^\\(ocd\\) *") ,
     deleteBreakpointRx("^Removed breakpoint ([0-9]+) at [0-9]+ : .*$"),
@@ -24,6 +24,7 @@ OCamlDebug::OCamlDebug( QWidget *parent_p , OCamlRun *ocamlrun_p, const QString 
     _arguments( arguments ),
     _ocamlrun_p( ocamlrun_p ),
     _port_min( 18000 ),
+    _ocamldebug_init_script( init_script ),
     _port_max( 18999 )
 {
     _current_port = Options::get_opt_int( "OCAMLDEBUG_PORT", _port_min ) ;
@@ -343,6 +344,8 @@ void OCamlDebug::startProcess()
     debugger( DebuggerCommand( "set loadingmode manual", DebuggerCommand::HIDE_ALL_OUTPUT ) );
     debugger( DebuggerCommand( "set socket 127.0.0.1:"+QString::number( _current_port ), DebuggerCommand::HIDE_DEBUGGER_OUTPUT ) );
     debugger( DebuggerCommand( "goto 0", DebuggerCommand::HIDE_ALL_OUTPUT ) );
+    if ( QFile::exists( _ocamldebug_init_script ) )
+        debugger( DebuggerCommand( "source " + _ocamldebug_init_script, DebuggerCommand::SHOW_ALL_OUTPUT ) );
     restoreBreakpoints();
     emit debuggerStarted( true );
     setEnabled( true );

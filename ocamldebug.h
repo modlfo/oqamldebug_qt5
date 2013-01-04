@@ -20,13 +20,14 @@ class OCamlDebug : public QPlainTextEdit
     Q_OBJECT
 
 public:
-    OCamlDebug( QWidget *parent_p , OCamlRun *ocamlrun, const QString &ocamldebug, const Arguments &arguments );
+    OCamlDebug( QWidget *parent_p , OCamlRun *ocamlrun, const QString &ocamldebug, const Arguments &arguments, const QString & init_script );
     virtual ~OCamlDebug( );
     void setArguments(const Arguments &arguments );
     void setOCamlDebug(const QString &);
     int debugTimeAreaWidth();
     void debugTimeAreaPaintEvent( QPaintEvent *event );
     const QMap<int,int> & timeInfo() const { return _time_info; }
+    void setInitializationScript( const QString &s ) { _ocamldebug_init_script =s ; }
 
 protected:
     void closeEvent(QCloseEvent *event);
@@ -79,7 +80,7 @@ private:
     QRegExp timeInfoRx ;
     QRegExp ocamlrunConnectionRx ;
     QList<QRegExp> _debuggerOutputsRx;
-    QString _ocamldebug;
+    QString _ocamldebug, _ocamldebug_init_script;
     Arguments _arguments;
     QString _command_line,_command_line_last,_command_line_backup;
     QMap<int,int> _time_info;
