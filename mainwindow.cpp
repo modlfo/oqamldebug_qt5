@@ -268,6 +268,8 @@ QMdiSubWindow* MainWindow::openOCamlSource(const QString &fileName, bool from_us
         if ( child->loadFile( fileName ) )
         {
             statusBar()->showMessage( tr( "File loaded" ), 2000 );
+            if ( ocamldebug )
+                child->breakPointList( ocamldebug->breakpoints() );
             child->show();
         }
         else

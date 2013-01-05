@@ -28,6 +28,7 @@ public:
     void debugTimeAreaPaintEvent( QPaintEvent *event );
     const QMap<int,int> & timeInfo() const { return _time_info; }
     void setInitializationScript( const QString &s ) { _ocamldebug_init_script =s ; }
+    const BreakPoints & breakpoints() const { return _breakpoints; }
 
 protected:
     void closeEvent(QCloseEvent *event);
