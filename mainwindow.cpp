@@ -19,7 +19,11 @@ MainWindow::MainWindow(const Arguments &arguments) : _arguments( arguments )
     ocamlstack_dock  = NULL;
     ocamlstack  = NULL;
     ocamlrun_dock  = NULL;
+    filebrowser_dock  = NULL;
     ocamlrun  = NULL;
+    filebrowser  = NULL;
+    filebrowser_model_p  = NULL;
+
     setWindowIcon( QIcon( ":/images/oqamldebug.png" ) );
     setDockNestingEnabled( true );
     help_p = NULL;
@@ -72,6 +76,31 @@ MainWindow::MainWindow(const Arguments &arguments) : _arguments( arguments )
 void MainWindow::createDockWindows()
 {
     Arguments args( _arguments );
+    filebrowser_dock = new QDockWidget( tr( "Source File Browser" ), this );
+    filebrowser_dock->setAllowedAreas( Qt::TopDockWidgetArea | Qt::BottomDockWidgetArea | Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea );
+    filebrowser = new QTreeView( );
+    filebrowser_model_p = new QFileSystemModel;
+    filebrowser_model_p->setNameFilters( QStringList() << "*.ml" );
+    filebrowser_model_p->setReadOnly( true );
+    filebrowser_model_p->setFilter( QDir::AllDirs | QDir::AllEntries | QDir::NoDot );
+    filebrowser_model_p->setNameFilterDisables( false  );
+    filebrowser->setModel( filebrowser_model_p );
+    filebrowser_dock->setObjectName("FileBrowser");
+    filebrowser_dock->setWidget( filebrowser );
+    filebrowser_dock->setTitleBarWidget( new QLabel(filebrowser_dock) );
+    connect( filebrowser_model_p, SIGNAL( rootPathChanged ( const QString & ) ), this, SLOT( fileBrowserPathChanged( const QString & ) ) );
+    QString dir = QDir::current().path();
+    filebrowser_model_p->setRootPath( dir );
+    filebrowser->setItemsExpandable( false );
+    filebrowser->setRootIndex( filebrowser_model_p->index( dir ) );
+    filebrowser->setSortingEnabled( true );
+    filebrowser->setRootIsDecorated( false );
+    addDockWidget( Qt::BottomDockWidgetArea, filebrowser_dock );
+    filebrowser_dock->toggleViewAction()->setIcon( QIcon( ":/images/open.png" ) );
+    mainMenu->addAction( filebrowser_dock->toggleViewAction() );
+    mainToolBar->addAction( filebrowser_dock->toggleViewAction() );
+    connect( filebrowser, SIGNAL( activated ( const QModelIndex & ) ), this, SLOT( fileBrowserItemActivated( const QModelIndex & ) ) );
+
     ocamlrun_dock = new QDockWidget( tr( "Application Output" ), this );
     ocamlrun_dock->setAllowedAreas( Qt::TopDockWidgetArea | Qt::BottomDockWidgetArea | Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea );
     ocamlrun = new OCamlRun( ocamlrun_dock, args );
@@ -194,29 +223,6 @@ void MainWindow::closeEvent( QCloseEvent *event )
     {
         event->accept();
     }
-}
-
-void MainWindow::open()
-{
-    QStringList fileNames = QFileDialog::getOpenFileNames( this,
-            tr ("OCaml Sources" ) ,
-            Options::get_opt_str("SOURCE_ML_DIR"),
-            tr ("OCaml Source (*.ml)")
-            );
-
-    bool first = true;
-    for (QStringList::const_iterator itSrc = fileNames.begin() ; itSrc != fileNames.end() ; ++itSrc )
-    {
-        openOCamlSource( *itSrc , true );
-        if (first)
-        {
-            QFileInfo info (*itSrc);
-            QString dir = info.absoluteDir().path();
-            Options::set_opt("SOURCE_ML_DIR", dir );
-            first =  false;
-        }
-    }
-    ocamlDebugFocus();
 }
 
 QMdiSubWindow* MainWindow::openOCamlSource(const QString &fileName, bool from_user_loaded)
@@ -517,11 +523,6 @@ void MainWindow::createActions()
     createWatchWindowAct->setStatusTip( tr( "Create a variable watch window" ) );
     connect( createWatchWindowAct, SIGNAL( triggered() ), this, SLOT( createWatchWindow() ) );
 
-    openAct = new QAction( QIcon( ":/images/open.png" ), tr( "&Open OCaml Source..." ), this );
-    openAct->setShortcuts( QKeySequence::Open );
-    openAct->setStatusTip( tr( "Open an existing OCaml source file" ) );
-    connect( openAct, SIGNAL( triggered() ), this, SLOT( open() ) );
-
     exitAct = new QAction( tr( "E&xit" ), this );
     exitAct->setShortcuts( QKeySequence::Quit );
     exitAct->setStatusTip( tr( "Exit the application" ) );
@@ -645,7 +646,6 @@ void MainWindow::createMenus()
     mainMenu->addAction( setOcamlDebugArgsAct );
     mainMenu->addAction( setOcamlDebugInitScriptAct );
     mainMenu->addAction( setWorkingDirectoryAct );
-    mainMenu->addAction( openAct );
     mainMenu->addSeparator();
     mainMenu->addAction( exitAct );
 
@@ -684,7 +684,6 @@ void MainWindow::createToolBars()
 {
     mainToolBar = addToolBar( tr( "Main" ) );
     mainToolBar->setObjectName("MainToolBar");
-    mainToolBar->addAction( openAct );
 
     editToolBar = addToolBar( tr( "Edit" ) );
     editToolBar->setObjectName("EditToolBar");
@@ -919,3 +918,25 @@ void MainWindow::watchVariable( const QString &val )
     }
 }
 
+void MainWindow::fileBrowserItemActivated( const QModelIndex &item ) 
+{
+    QString file = filebrowser_model_p->filePath( item ) ;
+    QFileInfo fileInfo( file );
+    if (  fileInfo.isDir() )
+    {
+        filebrowser_model_p->setRootPath( file );
+        filebrowser->setRootIndex( filebrowser_model_p->index( file ) );
+    }
+    else
+    {
+        openOCamlSource( file, true );
+        ocamlDebugFocus();
+    }
+}
+
+void MainWindow::fileBrowserPathChanged( const QString &path )
+{
+    QLabel *label_p = qobject_cast<QLabel*>(filebrowser_dock->titleBarWidget());
+    if (label_p)
+        label_p->setText( path );
+}

@@ -12,12 +12,15 @@ class OCamlDebug;
 class OCamlWatch;
 QT_BEGIN_NAMESPACE
 class QAction;
+class QTreeView;
+class QFileSystemModel;
 class QTextBrowser;
 class QPlainTextEdit;
 class QMenu;
 class QMdiArea;
 class QMdiSubWindow;
 class QSignalMapper;
+class QModelIndex;
 QT_END_NAMESPACE
 
 class MainWindow : public QMainWindow
@@ -32,7 +35,6 @@ protected:
     void closeEvent(QCloseEvent *event);
 
 private slots:
-    void open();
     void copy();
     void debuggerStart(bool);
     void debuggerStarted(bool b);
@@ -64,6 +66,8 @@ private slots:
     void displayVariable( const QString & );
     void printVariable( const QString & );
     void watchVariable( const QString & );
+    void fileBrowserItemActivated( const QModelIndex &item ) ;
+    void fileBrowserPathChanged( const QString &path );
 
 private:
     void createWatchWindow( int watch_id );
@@ -79,6 +83,8 @@ private:
     OCamlBreakpoint *ocamlbreakpoints ;
     OCamlStack *ocamlstack ;
     OCamlRun *ocamlrun ;
+    QTreeView *filebrowser ;
+    QFileSystemModel *filebrowser_model_p ;
     QMdiSubWindow *findMdiChild(const QString &fileName);
     QMdiSubWindow *findMdiChildNotLoadedFromUser();
 
@@ -94,7 +100,6 @@ private:
     QToolBar *editToolBar;
     QToolBar *debugToolBar;
     QToolBar *debugWindowToolBar;
-    QAction *openAct;
     QAction *createWatchWindowAct;
     QAction *setOcamlDebugAct;
     QAction *setWorkingDirectoryAct;
@@ -133,6 +138,7 @@ private:
     QDockWidget *ocamlbreakpoints_dock ;
     QDockWidget *ocamlstack_dock ;
     QDockWidget *ocamlrun_dock ;
+    QDockWidget *filebrowser_dock ;
 
     QList<int> _watch_ids;
     QList<OCamlWatch*> _watch_windows;
