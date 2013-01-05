@@ -6,6 +6,7 @@
 
 struct BreakPoint
 {
+    QString command;
     int id;
     QString file;
     int fromLine, toLine, fromColumn, toColumn;

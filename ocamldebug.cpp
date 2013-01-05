@@ -21,10 +21,10 @@ OCamlDebug::OCamlDebug( QWidget *parent_p , OCamlRun *ocamlrun_p, const QString 
     emacsHaltInfoRx("^\\x001A\\x001AH.*$"),
     timeInfoRx("^Time : ([0-9]+)( - pc : ([0-9]+) - .*)?\\n?$"),
     ocamlrunConnectionRx("^Waiting for connection\\.\\.\\.\\(the socket is [a-z.0-9_A-Z]*:[0-9]+\\)\\n?$"),
+    _ocamldebug_init_script( init_script ),
     _arguments( arguments ),
     _ocamlrun_p( ocamlrun_p ),
     _port_min( 18000 ),
-    _ocamldebug_init_script( init_script ),
     _port_max( 18999 )
 {
     _current_port = Options::get_opt_int( "OCAMLDEBUG_PORT", _port_min ) ;
@@ -372,23 +372,28 @@ QStringList OCamlDebug::generateBreakpointCommands() const
     QStringList breakpoint_commands ;
     for (BreakPoints::const_iterator itBreakpoint = _breakpoints.begin() ; itBreakpoint != _breakpoints.end() ; ++itBreakpoint )
     {
-        QFileInfo sourceInfo( itBreakpoint.value().file );
-        QString module = sourceInfo.baseName();
-        module = module.toLower();
-        if (module.length() > 0)
+        if ( itBreakpoint.value().command.isEmpty() )
         {
-            module[0] = module[0].toUpper();
-            QFile f ( itBreakpoint.value().file );
-            if ( f.open( QFile::ReadOnly | QFile::Text ) )
+            QFileInfo sourceInfo( itBreakpoint.value().file );
+            QString module = sourceInfo.baseName();
+            module = module.toLower();
+            if (module.length() > 0)
             {
-                QString command = QString("break @ %1 %2 %3")
-                    .arg(module)
-                    .arg( QString::number( itBreakpoint.value().toLine  ) )
-                    .arg( QString::number( itBreakpoint.value().toColumn ) );
+                module[0] = module[0].toUpper();
+                QFile f ( itBreakpoint.value().file );
+                if ( f.open( QFile::ReadOnly | QFile::Text ) )
+                {
+                    QString command = QString("break @ %1 %2 %3")
+                        .arg(module)
+                        .arg( QString::number( itBreakpoint.value().toLine  ) )
+                        .arg( QString::number( itBreakpoint.value().toColumn ) );
 
-                breakpoint_commands << command;
+                    breakpoint_commands << command;
+                }
             }
         }
+        else
+            breakpoint_commands << itBreakpoint.value().command ;
     }
 
     breakpoint_commands.removeDuplicates();
@@ -430,8 +435,12 @@ void OCamlDebug::appendText( const QByteArray &text )
     bool display = true;
     bool debugger_command = false;
     DebuggerCommand::Option command_option = DebuggerCommand::SHOW_ALL_OUTPUT ;
+    QString command ;
     if ( !_command_queue.isEmpty() )
+    {
         command_option = _command_queue.first().option();
+        command = _command_queue.first().command();
+    }
     QString data = QString::fromAscii( text ).remove( '\r' );
     bool command_completed = readyRx.indexIn( data ) >= 0;
     if ( command_completed )
@@ -472,6 +481,7 @@ void OCamlDebug::appendText( const QByteArray &text )
     else if ( newBreakpointRx.indexIn(data) == 0 )
     {
         BreakPoint breakpoint;
+        breakpoint.command = command;
         QString _id = newBreakpointRx.cap(1);
         breakpoint.file = newBreakpointRx.cap(2);
         QString _line = newBreakpointRx.cap(3);
