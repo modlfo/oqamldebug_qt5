@@ -640,6 +640,7 @@ void OCamlDebug::debuggerInterrupt()
     int pid = process_p->pid();
     ::kill( pid , SIGINT );
 #endif
+    _ocamlrun_p->debuggerInterrupt() ;
 }
 
 void OCamlDebug::debugger( const DebuggerCommand &command )

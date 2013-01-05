@@ -190,3 +190,7 @@ void OCamlRun::setVerbose( bool b )
     _verbose = b;
     Options::set_opt( "OCAMLRUN_VERBOSE", b );
 }
+
+void OCamlRun::debuggerInterrupt()
+{
+}

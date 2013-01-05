@@ -30,6 +30,7 @@ protected:
 
 public slots:
     void debuggerStarted( bool );
+    void debuggerInterrupt();
 
 private slots:
     void receiveDataFromProcessStdOutput();
