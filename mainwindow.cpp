@@ -89,7 +89,7 @@ void MainWindow::createDockWindows()
     filebrowser_dock->setWidget( filebrowser );
     filebrowser_dock->setTitleBarWidget( new QLabel(filebrowser_dock) );
     connect( filebrowser_model_p, SIGNAL( rootPathChanged ( const QString & ) ), this, SLOT( fileBrowserPathChanged( const QString & ) ) );
-    QString dir = QDir::current().path();
+    QString dir = Options::get_opt_str( "SOURCE_DIRECTORY", QDir::current().path() );
     filebrowser_model_p->setRootPath( dir );
     filebrowser->setItemsExpandable( false );
     filebrowser->setRootIndex( filebrowser_model_p->index( dir ) );
@@ -940,5 +940,8 @@ void MainWindow::fileBrowserPathChanged( const QString &path )
 {
     QLabel *label_p = qobject_cast<QLabel*>(filebrowser_dock->titleBarWidget());
     if (label_p)
+    {
         label_p->setText( path );
+        Options::set_opt( "SOURCE_DIRECTORY", path );
+    }
 }
