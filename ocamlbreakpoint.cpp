@@ -24,12 +24,15 @@ OCamlBreakpoint::OCamlBreakpoint( QWidget *parent_p ) :
     breakpoints_p->setColumnCount( headers.count() );
     breakpoints_p->setHeaderLabels( headers );
     clearData();
+    breakpoints_p->header()->restoreState( Options::get_opt_array( "OCamlBreakpoint_State" ) );
+    breakpoints_p->setSortingEnabled( true );
 
     setAttribute(Qt::WA_DeleteOnClose);
 }
 
 OCamlBreakpoint::~OCamlBreakpoint()
 {
+    Options::set_opt( "OCamlBreakpoint_State", breakpoints_p->header()->saveState() );
     clearData();
     delete layout_p;
     delete breakpoints_p;
