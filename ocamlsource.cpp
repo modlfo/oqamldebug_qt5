@@ -424,6 +424,7 @@ void OCamlSource::fileChanged ( )
         QApplication::restoreOverrideCursor();
         file.close();
     }
+    breakPointList( _breakpoints );
 }
 
 void OCamlSource::displayVar ( )
