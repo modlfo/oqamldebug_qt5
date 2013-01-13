@@ -19,10 +19,11 @@ OCamlBreakpoint::OCamlBreakpoint( QWidget *parent_p ) :
     setLayout( layout_p );
 
     QStringList headers ;
-    headers << "" << tr("Id") << tr("From") << tr("To") << tr("File") ;
+    headers << tr( "Del" ) << tr("Id") << tr("From") << tr("To") << tr("File") ;
     breakpoints_p->setRootIsDecorated(false);
     breakpoints_p->setColumnCount( headers.count() );
     breakpoints_p->setHeaderLabels( headers );
+    breakpoints_p->header()->setResizeMode( 0, QHeaderView::ResizeToContents );
     clearData();
     breakpoints_p->header()->restoreState( Options::get_opt_array( "OCamlBreakpoint_State" ) );
     breakpoints_p->setSortingEnabled( true );

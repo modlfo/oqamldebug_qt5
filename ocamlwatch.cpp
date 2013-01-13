@@ -34,7 +34,7 @@ OCamlWatch::OCamlWatch( QWidget *parent_p, int i ) :
     connect( variables_p->header(), SIGNAL( sectionResized ( int , int , int ) ), this, SLOT( columnResized( int, int, int) ) );
 
     QStringList headers ;
-    headers << "" << tr("Expresssion") << tr("Type") << tr("Value") ;
+    headers << tr("Del") << tr("Expresssion") << tr("Type") << tr("Value") ;
     variables_p->setRootIsDecorated(false);
     variables_p->setColumnCount( headers.count() );
     variables_p->setHeaderLabels( headers );
@@ -42,6 +42,7 @@ OCamlWatch::OCamlWatch( QWidget *parent_p, int i ) :
 
     setAttribute(Qt::WA_DeleteOnClose);
 
+    variables_p->header()->setResizeMode( 0, QHeaderView::ResizeToContents );
     variables_p->header()->restoreState( Options::get_opt_array( QString("OCamlWatch%1_State").arg( QString::number(id) ) ) );
     variables_p->setSortingEnabled( true );
     restoreWatches();
