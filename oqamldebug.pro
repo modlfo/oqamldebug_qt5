@@ -1,7 +1,6 @@
 CONFIG -= app_bundle
 QT += network
-VERSION=0.9.1
-QMAKESPEC=macx-g++
+VERSION=0.9.2
 
 isEmpty(PREFIX_BIN) {
  PREFIX_BIN = bin
