@@ -365,6 +365,11 @@ void OCamlDebug::restoreBreakpoints()
 
     for (QStringList::const_iterator itCommand = breakpoint_commands.begin(); itCommand != breakpoint_commands.end(); ++itCommand )
         debugger( DebuggerCommand( *itCommand, DebuggerCommand::HIDE_ALL_OUTPUT) );
+
+    if ( _breakpoints.isEmpty() && !breakpoint_commands.isEmpty() )
+    { // if resetting breakpoints are not possible, do not save the new breakpoint list
+        Options::set_opt( "BREAKPOINT_COMMANDS", breakpoint_commands );
+    }
 }
 
 QStringList OCamlDebug::generateBreakpointCommands() const
