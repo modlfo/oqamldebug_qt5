@@ -42,11 +42,14 @@ OCamlWatch::OCamlWatch( QWidget *parent_p, int i ) :
 
     setAttribute(Qt::WA_DeleteOnClose);
 
+    variables_p->header()->restoreState( Options::get_opt_array( QString("OCamlWatch%1_State").arg( QString::number(id) ) ) );
+    variables_p->setSortingEnabled( true );
     restoreWatches();
 }
 
 OCamlWatch::~OCamlWatch()
 {
+    Options::set_opt( QString("OCamlWatch%1_State").arg( QString::number(id) ), variables_p->header()->saveState() );
     clearData();
     delete add_value_completer_p;
     delete add_value_p;
