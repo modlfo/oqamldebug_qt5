@@ -26,12 +26,14 @@ OCamlStack::OCamlStack( QWidget *parent_p ) :
     stack_p->setColumnCount( headers.count() );
     stack_p->setHeaderLabels( headers );
     clearData();
+    stack_p->header()->restoreState( Options::get_opt_array( "OCamlStack_State" ) );
 
     setAttribute(Qt::WA_DeleteOnClose);
 }
 
 OCamlStack::~OCamlStack()
 {
+    Options::set_opt( "OCamlStack_State", stack_p->header()->saveState() );
     clearData();
     delete layout_p;
     delete stack_p;
