@@ -88,7 +88,11 @@ void MainWindow::createDockWindows()
     filebrowser_model_p = new QFileSystemModel;
     filebrowser_model_p->setNameFilters( QStringList() << "*.ml" );
     filebrowser_model_p->setReadOnly( true );
+#if QT_VERSION >= 0x040700
     filebrowser_model_p->setFilter( QDir::AllDirs | QDir::AllEntries | QDir::NoDot );
+#else
+    filebrowser_model_p->setFilter( QDir::AllDirs | QDir::AllEntries );
+#endif
     filebrowser_model_p->setNameFilterDisables( false  );
     filebrowser->setModel( filebrowser_model_p );
     filebrowser_dock->setObjectName("FileBrowser");
