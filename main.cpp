@@ -49,9 +49,12 @@ int main( int argc, char *argv[] )
     for (int i=1; i< argc ; i++)
         arguments << argv[i];
     Arguments args( arguments );
-    MainWindow mainWin( args );
-    mainWin.show();
-    int ret = app.exec();
+    int ret;
+    {
+        MainWindow mainWin( args );
+        mainWin.show();
+        ret = app.exec();
+    }
 
     Options::save_options();
 

@@ -73,6 +73,12 @@ MainWindow::MainWindow(const Arguments &arguments) : _arguments( arguments )
     ocamlDebugFocus();
 }
 
+MainWindow::~MainWindow()
+{
+    if ( filebrowser )
+        Options::set_opt( "FILEBROWSER_STATE", filebrowser->header()->saveState() );
+}
+
 void MainWindow::createDockWindows()
 {
     Arguments args( _arguments );
@@ -95,6 +101,7 @@ void MainWindow::createDockWindows()
     filebrowser->setRootIndex( filebrowser_model_p->index( dir ) );
     filebrowser->setSortingEnabled( true );
     filebrowser->setRootIsDecorated( false );
+    filebrowser->header()->restoreState( Options::get_opt_array( "FILEBROWSER_STATE" ) );
     addDockWidget( Qt::BottomDockWidgetArea, filebrowser_dock );
     filebrowser_dock->toggleViewAction()->setIcon( QIcon( ":/images/open.png" ) );
     mainMenu->addAction( filebrowser_dock->toggleViewAction() );

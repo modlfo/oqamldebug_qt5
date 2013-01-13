@@ -29,6 +29,7 @@ class MainWindow : public QMainWindow
 
 public:
     MainWindow(const Arguments &);
+    virtual ~MainWindow();
     QMdiSubWindow* openOCamlSource(const QString &fileName, bool from_user_loaded);
 
 protected:
