@@ -49,17 +49,14 @@ MainWindow::MainWindow(const Arguments &arguments) : _arguments( arguments )
     connect( windowMapper, SIGNAL( mapped( QWidget* ) ),
              this, SLOT( setActiveSubWindow( QWidget* ) ) );
 
-    _ocamldebug = Options::get_opt_str("OCAMLDEBUG" , QString() );
-    _ocamldebug_init_script = Options::get_opt_str("OCAMLDEBUG_INIT_SCRIPT" , QString() );
-    while (_ocamldebug.isEmpty())
+    _ocamldebug = findOCamlDebug();
+    if ( _ocamldebug.isEmpty() )
     {
-        if (QMessageBox::warning(this, tr("ocamldebug location"),
-                tr("It is the first time that you start OQamlDebug, please enter the path to ocamldebug executable."),
-                QMessageBox::Ok, QMessageBox::Abort )
-            != QMessageBox::Ok)
-           exit(0);
-        setOCamlDebug();
+        QMessageBox::critical( this, tr( "OCamlDebug" ), 
+                tr( "OCamlDebug executable could not be found into the executable path!" ) );
+        exit( -1 );
     }
+    _ocamldebug_init_script = Options::get_opt_str("OCAMLDEBUG_INIT_SCRIPT" , QString() );
     createActions();
     createMenus();
     createToolBars();
@@ -349,34 +346,6 @@ void MainWindow::setOCamlDebugInitScript()
         ocamldebug->setInitializationScript( _ocamldebug_init_script );
 }
 
-void MainWindow::setOCamlDebug()
-{
-    QFileInfo ocamldebug_exx_info ( Options::get_opt_str("OCAMLDEBUG") );
-    QString ocamldebug_exx = QFileDialog::getOpenFileName(this, 
-            tr("OCamlDebug Executable"),
-            ocamldebug_exx_info.absolutePath(),
-#if defined(Q_OS_UNIX)
-            "OCamlDebug (ocamldebug)"
-#else
-            "OCamlDebug (ocamldebug.exe)"
-#endif
-#if defined(Q_OS_MAC)
-            ,NULL,
-            QFileDialog::DontUseNativeDialog
-#endif
-            );
-    if (!ocamldebug_exx.isEmpty())
-    {
-        _ocamldebug=ocamldebug_exx;
-        Options::set_opt("OCAMLDEBUG", _ocamldebug);
-        if (ocamldebug)
-        {
-            Arguments args( _arguments );
-            ocamldebug->setOCamlDebug( _ocamldebug );
-        }
-    }
-}
-
 void MainWindow::copy()
 {
     if ( activeMdiChild() )
@@ -518,10 +487,6 @@ void MainWindow::createActions()
     setWorkingDirectoryAct->setStatusTip( tr( "Set current working directory" ) );
     connect( setWorkingDirectoryAct, SIGNAL( triggered() ), this, SLOT( setWorkingDirectory() ) );
 
-    setOcamlDebugAct = new QAction(  tr( "&Set OCamlDebug Executable..." ), this );
-    setOcamlDebugAct->setStatusTip( tr( "Set OCamlDebug executable" ) );
-    connect( setOcamlDebugAct, SIGNAL( triggered() ), this, SLOT( setOCamlDebug() ) );
-
     setOcamlDebugArgsAct = new QAction(  tr( "&Command Line Arguments..." ), this );
     setOcamlDebugArgsAct->setStatusTip( tr( "Set OCamlDebug command line arguments" ) );
     connect( setOcamlDebugArgsAct, SIGNAL( triggered() ), this, SLOT( setOCamlDebugArgs() ) );
@@ -655,7 +620,6 @@ void MainWindow::createActions()
 void MainWindow::createMenus()
 {
     mainMenu = menuBar()->addMenu( tr( "&Main" ) );
-    mainMenu->addAction( setOcamlDebugAct );
     mainMenu->addAction( setOcamlDebugArgsAct );
     mainMenu->addAction( setOcamlDebugInitScriptAct );
     mainMenu->addAction( setWorkingDirectoryAct );
@@ -955,4 +919,31 @@ void MainWindow::fileBrowserPathChanged( const QString &path )
         label_p->setText( path );
         Options::set_opt( "SOURCE_DIRECTORY", path );
     }
+}
+
+QString MainWindow::findOCamlDebug() const 
+{
+    const QString path = ::getenv( "PATH" );
+#if Q_OS_WIN32
+    const QString path_separator = ";";
+    const QString extension = ".exe";
+#else
+    const QString path_separator = ":";
+    const QString extension = "";
+#endif
+
+    QStringList paths = path.split( path_separator );
+#if Q_OS_WIN32
+    paths.prepend( QCoreApplication::applicationDirPath() );
+#endif
+
+    for( QStringList::const_iterator itPath = paths.begin(); itPath != paths.end(); ++itPath )
+    {
+        QString executable = *itPath + "/ocamldebug" + extension;
+        QFileInfo executable_info( executable );
+        if ( executable_info.isExecutable() )
+            return QDir::toNativeSeparators( executable_info.absoluteFilePath() );
+    }
+
+    return QString();
 }

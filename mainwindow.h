@@ -50,7 +50,6 @@ private slots:
     void debugBackStep();
     void debugNext();
     void debugPrevious();
-    void setOCamlDebug();
     void setWorkingDirectory();
     void setOCamlDebugArgs();
     void setOCamlDebugInitScript();
@@ -102,7 +101,6 @@ private:
     QToolBar *debugToolBar;
     QToolBar *debugWindowToolBar;
     QAction *createWatchWindowAct;
-    QAction *setOcamlDebugAct;
     QAction *setWorkingDirectoryAct;
     QAction *setOcamlDebugArgsAct;
     QAction *setOcamlDebugInitScriptAct;
@@ -140,6 +138,8 @@ private:
     QDockWidget *ocamlstack_dock ;
     QDockWidget *ocamlrun_dock ;
     QDockWidget *filebrowser_dock ;
+
+    QString findOCamlDebug() const ;
 
     QList<int> _watch_ids;
     QList<OCamlWatch*> _watch_windows;
