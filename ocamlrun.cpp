@@ -174,14 +174,21 @@ void OCamlRun::debuggerStarted( bool b )
 void OCamlRun::contextMenuEvent(QContextMenuEvent *event)
 {
     QMenu *menu = createStandardContextMenu();
+
+    QAction *clearAct = new QAction( tr( "&Clear" ) , this );
+    connect( clearAct, SIGNAL( triggered() ), this, SLOT( clear() ) );
+
     QAction *verboseAct = new QAction( tr( "&Verbose" ) , this );
     verboseAct->setCheckable( true );
     verboseAct->setChecked( _verbose );
     connect( verboseAct, SIGNAL( triggered(bool) ), this, SLOT( setVerbose(bool) ) );
+
     menu->addAction( verboseAct );
+    menu->addAction( clearAct );
     menu->exec(event->globalPos());
 
     delete verboseAct;
+    delete clearAct;
     delete menu;
 }
 
