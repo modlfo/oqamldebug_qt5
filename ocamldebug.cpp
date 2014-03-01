@@ -29,7 +29,7 @@ OCamlDebug::OCamlDebug( QWidget *parent_p , OCamlRun *ocamlrun_p, const QString 
 {
     _current_port = Options::get_opt_int( "OCAMLDEBUG_PORT", _port_min ) ;
     _debuggerOutputsRx.append( QRegExp( "^No such frame\\.\\n?$" ) );
-    _debuggerOutputsRx.append( QRegExp( "^#([0-9]+)  *Pc : [0-9]+ .*$" ) );
+    _debuggerOutputsRx.append( QRegExp( "^#([0-9]+)  *Pc *: *[0-9]+ .*$" ) );
     _debuggerOutputsRx.append( QRegExp( "^Loading program\\.\\.\\.[\\n ]+$" ) );
     _debuggerOutputsRx.append( QRegExp( "^done\\.[\\n ]+$" ) );
     _display_all_commands = Options::get_opt_bool( "DISPLAY_ALL_OCAMLDEBUG_COMMANDS", false );

@@ -8,7 +8,7 @@
 
 OCamlStack::OCamlStack( QWidget *parent_p ) : 
     QWidget(parent_p),
-    stackRx( "^#([0-9]*)  *Pc : ([0-9]+) *([^ ]+)  *char  *([0-9]+) *\\n?$" )
+    stackRx( "^#([0-9]*)  *Pc *: *([0-9]+) *([^ ]+)  *char  *([0-9]+) *\\n?$" )
 {
     setObjectName(QString("OCamlStack"));
     _current_frame = -1;
