@@ -19,7 +19,7 @@ OCamlDebug::OCamlDebug( QWidget *parent_p , OCamlRun *ocamlrun_p, const QString 
     hitBreakpointIdRx("( [0-9]+)"),
     newBreakpointRx("^Breakpoint ([0-9]+) at [0-9]+ *: file ([^,]*), line ([0-9]+), characters ([0-9]+)-([0-9]+).*$"),
     emacsHaltInfoRx("^\\x001A\\x001AH.*$"),
-    timeInfoRx("^Time : ([0-9]+)( - pc : ([0-9]+) - .*)?\\n?$"),
+    timeInfoRx("^Time *: *([0-9]+)( - pc *: *([0-9]+) - .*)?\\n?$"),
     ocamlrunConnectionRx("^Waiting for connection\\.\\.\\.\\(the socket is [a-z.0-9_A-Z]*:[0-9]+\\)\\n?$"),
     _ocamldebug_init_script( init_script ),
     _arguments( arguments ),
