@@ -10,7 +10,7 @@
 OCamlWatch::OCamlWatch( QWidget *parent_p, int i ) : 
     QWidget(parent_p),
     id(i),
-    variableRx( "^[^:]* : ([^=]*)=(.*)$" )
+    variableRx( "^[^:]* *: ([^=]*[^= ]) *= *([^ ].*)$" )
 {
     setObjectName(QString("OCamlWatch%1").arg( QString::number(id) ));
 
