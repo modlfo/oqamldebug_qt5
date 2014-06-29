@@ -1,6 +1,6 @@
 CONFIG -= app_bundle
 QT += network
-VERSION=0.9.3
+VERSION=0.9.4
 
 isEmpty(PREFIX_BIN) {
  PREFIX_BIN = bin
