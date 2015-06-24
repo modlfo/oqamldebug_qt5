@@ -1,6 +1,9 @@
 #include <QtGui>
 #include <QtDebug>
 #include <QTcpServer>
+#include <QMessageBox>
+#include <QToolTip>
+#include <QMenu>
 #include "ocamldebughighlighter.h"
 #include "ocamldebug.h"
 #include "ocamlrun.h"
@@ -446,7 +449,7 @@ void OCamlDebug::appendText( const QByteArray &text )
         command_option = _command_queue.first().option();
         command = _command_queue.first().command();
     }
-    QString data = QString::fromAscii( text ).remove( '\r' );
+    QString data = QString::fromLatin1( text ).remove( '\r' );
     bool command_completed = readyRx.indexIn( data ) >= 0;
     if ( command_completed )
     {
@@ -689,7 +692,7 @@ void OCamlDebug::processOneQueuedCommand()
             displayCommandLine();
             _command_line += '\n';
         }
-        process_p->write( (command+'\n').toAscii() );
+        process_p->write( (command+'\n').toLatin1() );
         if( show_command )
         {
             displayCommandLine();

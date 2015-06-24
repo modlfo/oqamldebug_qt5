@@ -9,6 +9,19 @@
 #include "ocamlstack.h"
 #include "ocamlwatch.h"
 #include <QFileInfo>
+#include <QFileSystemModel>
+#include <QAction>
+#include <QMdiSubWindow>
+#include <QStatusBar>
+#include <QToolBar>
+#include <QMenuBar>
+#include <QMenu>
+#include <QDockWidget>
+#include <QTextBrowser>
+#include <QHeaderView>
+#include <QMessageBox>
+#include <QInputDialog>
+#include <QFileDialog>
 
 MainWindow::MainWindow(const Arguments &arguments) : _arguments( arguments )
 {

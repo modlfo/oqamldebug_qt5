@@ -4,7 +4,7 @@
 #include <QStringListModel>
 #include "ocamlbreakpoint.h"
 #include "options.h"
-
+#include <QHeaderView>
 
 OCamlBreakpoint::OCamlBreakpoint( QWidget *parent_p ) : 
     QWidget(parent_p)
@@ -23,7 +23,7 @@ OCamlBreakpoint::OCamlBreakpoint( QWidget *parent_p ) :
     breakpoints_p->setRootIsDecorated(false);
     breakpoints_p->setColumnCount( headers.count() );
     breakpoints_p->setHeaderLabels( headers );
-    breakpoints_p->header()->setResizeMode( 0, QHeaderView::ResizeToContents );
+    breakpoints_p->header()->setSectionResizeMode( 0, QHeaderView::ResizeToContents );
     clearData();
     breakpoints_p->header()->restoreState( Options::get_opt_array( "OCamlBreakpoint_State" ) );
     breakpoints_p->setSortingEnabled( true );
@@ -80,8 +80,8 @@ void  OCamlBreakpoint::updateBreakpoints()
         item_p->setToolTip( 0, tr( "Click to delete this breakpoint." ) );
         item_p->setSizeHint( 0, delete_icon.availableSizes().at(0) );
         breakpoints_p->header()->resizeSection( 0, delete_icon.availableSizes().at(0).width() ); 
-        breakpoints_p->header()->setResizeMode( 0, QHeaderView::Fixed ); 
-        breakpoints_p->header()->setResizeMode( 3, QHeaderView::ResizeToContents ); 
+        breakpoints_p->header()->setSectionResizeMode( 0, QHeaderView::Fixed ); 
+        breakpoints_p->header()->setSectionResizeMode( 3, QHeaderView::ResizeToContents ); 
 
         breakpoints_p->addTopLevelItem( item_p );
     }

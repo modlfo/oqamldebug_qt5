@@ -45,7 +45,7 @@ private:
     void appendText(const QByteArray &, const QColor &color = Qt::black );
     void appendText(const QString &s, const QColor &color = Qt::black )
     {
-        appendText( s.toAscii(), color );
+        appendText( s.toLatin1(), color );
     }
     QProcess *process_p;
     QTextStream _outstream;

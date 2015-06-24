@@ -3,7 +3,9 @@
 #include <QTextStream>
 #include "ocamlrun.h"
 #include "options.h"
-
+#include <QMessageBox>
+#include <QAction>
+#include <QMenu>
 
 OCamlRun::OCamlRun( QWidget *parent_p , const Arguments & arguments ) : QPlainTextEdit(parent_p),
     _arguments( arguments )
@@ -82,7 +84,7 @@ void OCamlRun::keyPressEvent ( QKeyEvent * e )
                      break;
              }
              _outstream.flush();
-             appendText( text.toAscii(), Qt::blue );
+             appendText( text.toLatin1(), Qt::blue );
          }
      }
      else

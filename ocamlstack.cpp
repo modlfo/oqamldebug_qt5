@@ -4,7 +4,7 @@
 #include <QStringListModel>
 #include "ocamlstack.h"
 #include "options.h"
-
+#include <QHeaderView>
 
 OCamlStack::OCamlStack( QWidget *parent_p ) : 
     QWidget(parent_p),
@@ -131,7 +131,7 @@ void  OCamlStack::debuggerCommand( const QString &cmd, const QString &result)
             if ( is_current_frame )
                 item_p->setBackgroundColor( i, Qt::yellow );
         }
-        stack_p->header()->setResizeMode( 3, QHeaderView::ResizeToContents ); 
+        stack_p->header()->setSectionResizeMode( 3, QHeaderView::ResizeToContents ); 
 
         stack_p->addTopLevelItem( item_p );
     }

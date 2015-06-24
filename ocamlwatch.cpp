@@ -5,7 +5,8 @@
 #include "ocamlwatch.h"
 #include "textdiff.h"
 #include "options.h"
-
+#include <QHeaderView>
+#include <QLineEdit>
 
 OCamlWatch::OCamlWatch( QWidget *parent_p, int i ) : 
     QWidget(parent_p),
@@ -42,7 +43,7 @@ OCamlWatch::OCamlWatch( QWidget *parent_p, int i ) :
 
     setAttribute(Qt::WA_DeleteOnClose);
 
-    variables_p->header()->setResizeMode( 0, QHeaderView::ResizeToContents );
+    variables_p->header()->setSectionResizeMode( 0, QHeaderView::ResizeToContents );
     variables_p->header()->restoreState( Options::get_opt_array( QString("OCamlWatch%1_State").arg( QString::number(id) ) ) );
     variables_p->setSortingEnabled( true );
     restoreWatches();
@@ -196,9 +197,9 @@ void  OCamlWatch::debuggerCommand( const QString &cmd, const QString &result)
             else
             {
                 if ( modified )
-                    printed_value = "<HTML><BODY><B>" + Qt::escape( value ) + "</B></BODY></HTML>";
+                    printed_value = "<HTML><BODY><B>" + value.toHtmlEscaped() + "</B></BODY></HTML>";
                 else
-                    printed_value = "<HTML><BODY>" + Qt::escape( value ) + "</BODY></HTML>";
+                    printed_value = "<HTML><BODY>" + value.toHtmlEscaped() + "</BODY></HTML>";
             }
 
             QLabel *value_p = new QLabel( printed_value );
@@ -211,8 +212,8 @@ void  OCamlWatch::debuggerCommand( const QString &cmd, const QString &result)
             item_p->setToolTip( 0, tr( "Click to unwatch this variable." ) );
             item_p->setSizeHint( 0, delete_icon.availableSizes().at(0) );
             variables_p->header()->resizeSection( 0, delete_icon.availableSizes().at(0).width() ); 
-            variables_p->header()->setResizeMode( 0, QHeaderView::Fixed ); 
-            variables_p->header()->setResizeMode( 3, QHeaderView::ResizeToContents ); 
+            variables_p->header()->setSectionResizeMode( 0, QHeaderView::Fixed ); 
+            variables_p->header()->setSectionResizeMode( 3, QHeaderView::ResizeToContents ); 
 
             variables_p->addTopLevelItem( item_p );
             variables_p->setItemWidget( item_p, 3, value_p );

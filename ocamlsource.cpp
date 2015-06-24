@@ -5,6 +5,8 @@
 #include <QTimer>
 #include <QAction>
 #include <QMenu>
+#include <QScrollBar>
+#include <QApplication>
 
 const static int timer_values[] = { 50, 50, 50, 25, 25  } ;
 const static int nb_timer_values = sizeof( timer_values ) / sizeof( int );

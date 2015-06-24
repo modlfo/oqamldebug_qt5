@@ -2,8 +2,7 @@
 #include "ocamlsource.h"
 #include "mainwindow.h"
 #include <qsettings.h>
-#include <qworkspace.h>
-#include <qwidget.h>
+#include <QWidget>
 #include <qtextstream.h>
 #include <QMainWindow>
 #include <QMdiSubWindow>
@@ -325,7 +324,7 @@ void Options::restore_window_position( MainWindow *wmain_p )
         QString type = get_opt_str( "TYPE_" + name, QString() );
         if ( type == "SOURCEVIEW" )
         {
-            QString source = get_opt_str( "SOURCE_" + name, QString::null ).toAscii();
+            QString source = get_opt_str( "SOURCE_" + name, QString::null ).toLatin1();
             bool from_user_loaded = get_opt_bool( "SOURCE_USER_LOADED_" + name, false );
             QMdiSubWindow *widget_p = wmain_p->openOCamlSource( source , from_user_loaded );
             if ( widget_p )

@@ -1,5 +1,5 @@
 CONFIG -= app_bundle
-QT += network
+QT += network widgets
 VERSION=0.9.4
 
 isEmpty(PREFIX_BIN) {

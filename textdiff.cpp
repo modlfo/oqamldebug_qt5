@@ -596,7 +596,7 @@ QString htmlDiff( const QString &cur, const QString &ref )
                 { 
                     QString text = it->text();
                     ret += "<span style=\"text-decoration: line-through;\"><font color=\"gray\">"; 
-                    ret += Qt::escape( text );
+                    ret += text.toHtmlEscaped();
                     ret += "</font></span>"; 
                 }
                 break;
@@ -604,7 +604,7 @@ QString htmlDiff( const QString &cur, const QString &ref )
                 {
                     QString text = cur.mid( pos, it->length() );
                     ret += "<span style=\"text-decoration: underline;\"><B><font color=\"blue\">"; 
-                    ret += Qt::escape( text );
+                    ret += text.toHtmlEscaped();
                     ret += "</font></B></span>"; 
                     pos += it->length();
                 }
@@ -612,7 +612,7 @@ QString htmlDiff( const QString &cur, const QString &ref )
             case TextDiff::SAME: 
                 { 
                     QString text = cur.mid( pos, it->length() );
-                    ret += Qt::escape( text );
+                    ret += text.toHtmlEscaped();
                     pos += it->length();
                 }
                 break;

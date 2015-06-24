@@ -6,7 +6,7 @@
 #include <QMdiArea>
 #include <QWidget>
 #include <QMainWindow>
-#include <QWorkspace>
+#include <QMdiArea>
 #include <QList>
 class MainWindow ;
 

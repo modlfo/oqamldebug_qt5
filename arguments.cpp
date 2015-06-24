@@ -18,7 +18,7 @@ Arguments::Arguments( const QString &a )
     {
         if ( between_arguments )
         {
-            switch ( itChar->toAscii() )
+            switch ( itChar->toLatin1() )
             {
                 case '"':
                     quoted_argument = true;
@@ -46,7 +46,7 @@ Arguments::Arguments( const QString &a )
             }
             else
             {
-                switch ( itChar->toAscii() )
+                switch ( itChar->toLatin1() )
                 {
                     case '"':
                         quoted_argument = !quoted_argument;
